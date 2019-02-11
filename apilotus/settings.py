@@ -60,7 +60,8 @@ DJANGO_APPS = [
 LOCAL_APPS = [
     'lotus_auth',
     'notifications',
-    'loci'
+    'loci',
+    'lotus_dashboard',
 ]
 
 THIRD_PARTY_APPS = [

@@ -22,11 +22,12 @@ class CustomUserAdmin(UserAdmin):
     # These override the definitions on the base UserAdmin
     # that reference the removed 'username' field
     fieldsets = (
-        (None, {'fields': ('username', 'email', 'password')}),
-        (_('Personal info'), {'fields': ('first_name', 'last_name', 'gender', 'date_of_birth', 'phone')}),
-        # (_('Location'), {'fields': ('address', 'city', 'state', 'zipcode', 'latitude', 'longitude', 'signup_ip_address', 'signup_country_code')}),
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'display_name', 'gender', 'date_of_birth', 'phone')}),
+        (_('Contact info'), {'fields': ('sms', 'email', 'bot', 'sms_enable', 'email_enable', 'bot_enable')}),
         (_('Location'), {'fields': ('address', 'city', 'state', 'zipcode', 'latitude', 'longitude')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions',
+                                       'crm_permissions', 'crm_positions', 'page_permissions', 'user_status', 'user_role')}),
         (_('User Options'), {'fields': ('sites_subscribed', )}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined', 'site_joined')}),
     )
@@ -34,13 +35,13 @@ class CustomUserAdmin(UserAdmin):
         (
             None, {
                 'classes': ('wide',),
-                'fields': ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'gender', 'date_of_birth', 'address', 'city', 'state', 'zipcode', 'accept_terms')
+                'fields': ('username', 'email', 'password1', 'password2', 'first_name', 'last_name', 'gender', 'date_of_birth', 'address', 'city', 'state', 'zipcode')
             }
         ),
     )
-    list_display = ['username', 'email', 'first_name', 'last_name', 'is_staff']
-    search_fields = ('email', 'username', 'first_name', 'last_name')
-    ordering = ('-is_staff', 'username',)
+    list_display = ['username', 'display_name', 'email', 'sms', 'email', 'bot', 'is_staff']
+    search_fields = ('email', 'username', 'display_name')
+    # ordering = ('-is_staff', 'username',)
 
 
 if HIJACK_INSTALLED:

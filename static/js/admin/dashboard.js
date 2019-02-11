@@ -1,6 +1,6 @@
 jQuery(document).ready(function(t) {
     let e;
-    let loading_gif = '<img src="../images/loading.gif" style="width:22px;height:22px;">';
+    let loading_gif = '<img src="/static/images/loading.gif" style="width:22px;height:22px;">';
     let remove_icon = '<span class="glyphicon glyphicon-remove-sign" aria-hidden="true" style="color: #ffa5a5"></span>';
     let crm_list = null;
     let i = -1;
@@ -106,7 +106,7 @@ jQuery(document).ready(function(t) {
         show_waiting("sales", "", true);
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/crm_list.php",
+            url: "/admin/ajax_crm_list",
             data: {},
             success: function(response) {
                 show_waiting("sales", "", false);
@@ -722,7 +722,7 @@ jQuery(document).ready(function(t) {
     show_waiting("sales", "", true);
     t.ajax({
         type: "GET",
-        url: "../daemon/ajax_admin/dashboard_columns_get.php",
+        url: "/admin/ajax_dashboard_columns_get",
         data: {},
         success: function(data) {
             show_waiting("sales", "", false);

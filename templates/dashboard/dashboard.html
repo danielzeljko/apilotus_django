@@ -101,7 +101,6 @@
                     <button type="button" class="btn btn-default btn-sm btn_quick_edit" data-toggle="modal" data-target="#quick_edit_modal"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Quick Edit</button>
                 </div>
             </div>
-<!--                <div class="box-body table-responsive">--> <!--  a_dt table_dashboard -->
             <div class="row a_no_lr_margin">
                 <div class="table-responsive">
                     <table id="a_crm_list_tb" class="table nowrap a_dt table_dashboard" style="margin-top:10px; width: 100%;">
@@ -121,9 +120,9 @@
                                     <th>S1 PP%</th>
                                     <th>GOAL%</th>
                                     <th>GOAL</th>
-    <!--                                <th>UPDATED</th>-->
+{#                                    <th>UPDATED</th>#}
                                     <th>SETTING</th>
-<!--                                        <th><button type="button" class="btn btn-link btn-sm btn_refresh_all" id=""><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button></th>-->
+{#                                    <th><button type="button" class="btn btn-link btn-sm btn_refresh_all" id=""><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></button></th>#}
                                 </tr>
                             </thead>
                             <tbody>
@@ -131,10 +130,9 @@
                         </table>
                 </div>
             </div>
-<!--                </div>-->
         </div>
     </div>
-    <span id="crm_positions" style="display: none;"><?php echo $crm_positions; ?></span>
+    <span id="crm_positions" style="display: none;">{{ crm_positions }}</span>
 </div>
 {% endblock %}
 

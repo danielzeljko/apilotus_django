@@ -7,11 +7,13 @@ from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import AbstractUser, User, Group, Permission, _user_has_perm, _user_get_all_permissions, _user_has_module_perms
 
 from localflavor.us.us_states import STATE_CHOICES
 from loci.utils import geocode
+from lotus_dashboard.models import CrmAccount
 
 
 class LotusUserManager(BaseUserManager):
@@ -59,28 +61,29 @@ class LotusUserManager(BaseUserManager):
 
 class LotusUser(AbstractBaseUser):
     username = models.CharField(max_length=100, unique=True)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, null=True, blank=True)
+    last_name = models.CharField(max_length=100, null=True, blank=True)
     display_name = models.CharField(max_length=100)
 
-    sms = models.CharField(max_length=100)
-    email = models.EmailField(verbose_name='email address', max_length=255, unique=True)
-    bot = models.CharField(max_length=100)
-    sms_enable = models.BooleanField(default=True)
-    email_enable = models.BooleanField(default=True)
-    bot_enable = models.BooleanField(default=True)
+    sms = models.CharField(max_length=100, null=True, blank=True)
+    email = models.EmailField(verbose_name='email address', max_length=255, unique=True, null=True, blank=True)
+    bot = models.CharField(max_length=100, null=True, blank=True)
+    sms_enable = models.BooleanField(default=False)
+    email_enable = models.BooleanField(default=False)
+    bot_enable = models.BooleanField(default=False)
 
     date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(
         max_length=6,
         choices=[("male", "Male"), ("female", "Female")],
+        null=True, blank=True
     )
 
-    address = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    state = models.CharField(max_length=50, choices=STATE_CHOICES)
+    address = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=50, choices=STATE_CHOICES, null=True, blank=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
-    zipcode = models.CharField(max_length=10)
+    zipcode = models.CharField(max_length=10, null=True, blank=True)
     county = models.CharField(max_length=100, blank=True, null=True)
 
     latitude = models.CharField(max_length=100, null=True, blank=True)
@@ -94,11 +97,15 @@ class LotusUser(AbstractBaseUser):
 
     groups = models.ManyToManyField(Group, blank=True)
     user_permissions = models.ManyToManyField(Permission, blank=True)
-    crm_permissions = models.CharField(max_length=100, null=True, blank=True)
+    crm_permissions = models.ManyToManyField(CrmAccount, blank=True)
+    crm_positions = models.CharField(max_length=100, null=True, blank=True)
     page_permissions = models.CharField(max_length=100, null=True, blank=True)
 
     user_status = models.IntegerField(blank=False, default=1)
-    user_role = models.IntegerField(blank=False, default=0)
+    user_role = models.CharField(
+        max_length=5,
+        choices=[("admin", "Admin"), ("user", "User")],
+    )
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -141,7 +148,6 @@ class LotusUser(AbstractBaseUser):
     def age(self):
         return self.get_age()
 
-    # On Python 3: def __str__(self):
     def __str__(self):
         return self.username
 
@@ -244,6 +250,11 @@ class LotusUser(AbstractBaseUser):
     def unseen_notification_count(self):
         notifications = self.get_notifications()
         return notifications.filter(seen_at__isnull=True).count()
+
+    class Meta:
+        verbose_name = _('User')
+        verbose_name_plural = _('Users')
+        ordering = ['pk']
 
 
 class LotusUserSignup(models.Model):
