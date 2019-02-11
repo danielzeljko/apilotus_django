@@ -70,6 +70,7 @@ THIRD_PARTY_APPS = [
     'constance.backends.database',
     'debug_toolbar',
     'localflavor',
+    'widget_tweaks',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
@@ -220,11 +221,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
     # ('node_modules', os.path.join(BASE_DIR, 'node_modules')),
-# ]
+]
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
@@ -273,4 +274,11 @@ JET_SIDE_MENU_COMPACT = True
 
 MINIMUM_USER_AGE = 13
 
+########## AUTH CONFIGURATION
 AUTH_USER_MODEL = 'lotus_auth.LotusUser'
+LOGIN_REDIRECT_URL = '/accounts/profile/'
+# This is a custom Admin site URL used to replace the easily guessable /admin
+MWC_ADMIN_URL = os.environ.get('LOTUS_ADMIN_URL', 'admin-lotus/')
+# Password reset should be expired after 24 hours
+PASSWORD_RESET_TIMEOUT_DAYS = 1
+########## END AUTH CONFIGURATION

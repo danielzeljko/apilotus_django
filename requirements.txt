@@ -12,3 +12,4 @@ python-memcached==1.59
 feedparser==5.2.1
 django-localflavor==1.4.1
 geopy==1.11.0
+django-widget-tweaks==1.4.2

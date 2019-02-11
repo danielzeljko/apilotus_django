@@ -32,6 +32,8 @@ urlpatterns = [
 
     path('i18n/', include('django.conf.urls.i18n')),
 
+    url(r'^accounts/', include('lotus_auth.urls')),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:

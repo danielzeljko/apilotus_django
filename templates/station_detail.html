@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+
+{% block head_js %}
+{{block.super}}
+{% include "includes/include_google_maps.html" %}
+<script>
+    // When the window has finished loading create our google map below
+    google.maps.event.addDomListener(window, 'load', init);
+
+    function init() {
+
+        var myLatlng = new google.maps.LatLng({{ station.frequency_coords }});
+        var myLatlng2 = new google.maps.LatLng({{ station.frequency_coords_secondary }});
+        var myLatlng3 = new google.maps.LatLng({{ station.frequency_coords_tertiary }});
+
+        // Basic options for a simple Google Map
+        // For more options see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
+        var mapOptions = {
+            // How zoomed in you want the map to start at (always required)
+            zoom: 7,
+            scrollwheel: false,
+
+            // The latitude and longitude to center the map (always required)
+            center: myLatlng, 
+
+            // How you would like to style the map. 
+            // This is where you would paste any style found on Snazzy Maps.
+            styles: [{"featureType":"water","elementType":"all","stylers":[{"hue":"#e9ebed"},{"saturation":-78},{"lightness":67},{"visibility":"simplified"}]},{"featureType":"landscape","elementType":"all","stylers":[{"hue":"#ffffff"},{"saturation":-100},{"lightness":100},{"visibility":"simplified"}]},{"featureType":"road","elementType":"geometry","stylers":[{"hue":"#bbc0c4"},{"saturation":-93},{"lightness":31},{"visibility":"simplified"}]},{"featureType":"poi","elementType":"all","stylers":[{"hue":"#ffffff"},{"saturation":-100},{"lightness":100},{"visibility":"off"}]},{"featureType":"road.local","elementType":"geometry","stylers":[{"hue":"#e9ebed"},{"saturation":-90},{"lightness":-8},{"visibility":"simplified"}]},{"featureType":"transit","elementType":"all","stylers":[{"hue":"#e9ebed"},{"saturation":10},{"lightness":69},{"visibility":"on"}]},{"featureType":"administrative.locality","elementType":"all","stylers":[{"hue":"#2c2e33"},{"saturation":7},{"lightness":19},{"visibility":"on"}]},{"featureType":"road","elementType":"labels","stylers":[{"hue":"#bbc0c4"},{"saturation":-93},{"lightness":31},{"visibility":"on"}]},{"featureType":"road.arterial","elementType":"labels","stylers":[{"hue":"#bbc0c4"},{"saturation":-93},{"lightness":-2},{"visibility":"simplified"}]}]
+        };
+
+        // Get the HTML DOM element that will contain your map 
+        // We are using a div with id="map" seen below in the <body>
+        var mapElement = document.getElementById('map');
+
+        // Create the Google Map using out element and options defined above
+        var map = new google.maps.Map(mapElement, mapOptions);
+        var pin = '{{ STATIC_URL }}img/icons/blue-pin.png';
+        var pin2 = '{{ STATIC_URL }}img/icons/orange-pin.png';
+        var pin3 = '{{ STATIC_URL }}img/icons/yellow-pin.png';
+
+        // primary frequency
+        var marker = new google.maps.Marker({
+            position: myLatlng,
+            map: map,
+            icon: pin
+        });
+
+        try {
+            var radius = {{ station.frequency_coverage_radius }};
+            var circle = new google.maps.Circle({
+                map: map,
+                radius: radius,
+                fillColor: '#c1e2ff',
+                fillOpacity: 0.4,
+                scale: 1,
+                strokeColor: '#7ec2fe',
+                strokeWeight: 2
+            });
+            circle.bindTo('center', marker, 'position');
+        } catch (e) {
+            try{
+                // look for polygonal radius
+                var polygonal_coverage_radius = {{ station.polygonal_coverage_radius }};
+                polygon=new google.maps.Polygon({
+                    path: polygonal_coverage_radius,
+                    fillColor: '#c1e2ff',
+                    fillOpacity: 0.4,
+                    scale: 1,
+                    strokeColor: '#7ec2fe',
+                    strokeWeight: 2
+                });
+                polygon.setMap(map);
+            } catch (e) {}
+        }
+
+        // secondary frequency
+        try {
+            var marker2 = new google.maps.Marker({
+                position: myLatlng2,
+                map: map,
+                icon: pin2
+            });
+        } catch (e) {}
+        
+        try {
+            var radius2 = {{ station.frequency_coverage_radius_secondary }};
+            var circle = new google.maps.Circle({
+                map: map,
+                radius: radius2,
+                fillColor: '#ffd0bb',
+                fillOpacity: 0.3,
+                scale: 1,
+                strokeColor: '#ffa177',
+                strokeWeight: 2
+            });
+            circle.bindTo('center', marker2, 'position');
+        } catch (e) {
+            try {
+                // look for polygonal radius
+                var polygonal_coverage_radius2 = {{ station.polygonal_coverage_radius_secondary }};
+                polygon=new google.maps.Polygon({
+                    path: polygonal_coverage_radius2,
+                    fillColor: '#ffd0bb',
+                    fillOpacity: 0.3,
+                    scale: 1,
+                    strokeColor: '#ffa177',
+                    strokeWeight: 2
+                });
+                polygon.setMap(map);
+            } catch (e) {}
+        }
+
+        // tertiary frequency
+        try {
+            var marker3 = new google.maps.Marker({
+                position: myLatlng3,
+                map: map,
+                icon: pin3
+            });
+        } catch (e) {}
+        
+        try {
+            var radius3 = {{ station.frequency_coverage_radius_tertiary }};
+            var circle = new google.maps.Circle({
+                map: map,
+                radius: radius3,
+                fillColor: '#ffefbb',
+                fillOpacity: 0.3,
+                scale: 1,
+                strokeColor: '#ffde77',
+                strokeWeight: 2
+            });
+            circle.bindTo('center', marker3, 'position');
+        } catch (e) {
+            try{
+                // look for polygonal radius
+                var polygonal_coverage_radius3 = {{ station.polygonal_coverage_radius_tertiary }};
+                polygon=new google.maps.Polygon({
+                    path: polygonal_coverage_radius3,
+                    fillColor: '#ffefbb',
+                    fillOpacity: 0.3,
+                    scale: 1,
+                    strokeColor: '#ffde77',
+                    strokeWeight: 2
+                });
+                polygon.setMap(map);
+            } catch (e) {}
+        }
+
+        var infowindow = new google.maps.InfoWindow();
+        var markers = [marker, marker2, marker3];
+        $.each(markers, function(key, data) {
+            google.maps.event.addListener(data, 'click', function() {
+                infowindow.open(map,data);
+                if (key === 0) {
+                    infowindow.setContent('{{ station.frequency }} {{station.band }}');
+                } else if (key === 1) {
+                    infowindow.setContent('{{ station.frequency_secondary }} {{station.band_secondary}}');
+                } else if (key === 2) {
+                    infowindow.setContent('{{ station.frequency_tertiary }} {{station.band_tertiary }}');
+                }
+                
+            });
+        });
+
+    }
+</script>
+{% endblock %}
+
+{% block main-content-col %}
+
+        {{ station.site.pr }}
+        <h1>About {{ station.brand_name }}</h1>
+
+        <div id="map" class="station-map"></div>
+
+            <h2>Station Information</h2>
+            {% if station.station_description %}
+            {{ station.station_description|safe|escape|linebreaks }}
+            {% else %}
+            <p>{{ station.brand_name }} is a {{ station.radio_format.name|lower }} radio station located in our {{ station.market }} market.</p>
+            {% endif %}
+
+        <dl>
+            <dt>Call Letters</dt>
+            <dd>{{ station.call_letters }}</dd>
+            <dt>Format</dt>
+            <dd>{{ station.radio_format.name }}</dd>
+            {% if station.frequency %}
+            <dt>Frequency</dt>
+            <dd>
+                <span class="station-frequency">{{ station.frequency }} {{ station.band }}</span>
+            </dd>
+            {% endif %}
+            {% if station.frequency_secondary %}
+            <dt>Frequency 2</dt>
+            <dd>
+                <span class="station-frequency">{{ station.frequency_secondary }} {{ station.band_secondary }}</span>
+            </dd>
+            {% endif %}
+
+            {% if station.frequency_tertiary %}
+            <dt>Frequency 3</dt>
+            <dd>
+                <span class="station-frequency">{{ station.frequency_tertiary }} {{ station.band_tertiary }}</span>
+            </dd>
+            {% endif %}
+
+        	<dt>Location</dt>
+        	<dd>
+        		{{station.market.address}}<br/>
+        		{{ station.market.city }}, {{ station.market.state }} {{station.market.zip_code}}
+        	</dd>
+        	{% if station.business_line %}
+        	<dt>Business Phone</dt>
+        	<dd>{{ station.business_line }}</dd>
+        	{% endif%}
+        	{% if station.fax_line %}
+        	<dt>Business Fax</dt>
+        	<dd>{{ station.fax_line }}</dd>
+        	{% endif %}
+        	{% if station.studio_line_main %}
+        	<dt>Studio Line 1</dt>
+        	<dd>{{ station.studio_line_main }}</dd>
+        	{% endif %}
+        	{% if station.studio_line_secondary %}
+        	<dt>Studio Line 2</dt>
+        	<dd>{{ station.studio_line_secondary }}</dd>
+        	{% endif %}
+        	{% if station.brand_manager %}
+        	<dt>Brand Manager</dt>
+        	<dd>{{ station.brand_manager }} <a href="mailto:{{ station.brand_manager_email }}" title="Email {{ station.brand_manager }}"><img class="inline-icon" src="{{ STATIC_URL }}img/mail.svg" alt="Email"/></a></dd>
+        	{% endif %}
+            {% if station.sales_manager %}
+            <dt>Sales Manager</dt>
+            <dd>{{ station.sales_manager }} <a href="mailto:{{ station.sales_manager_email }}" title="Email {{ station.sales_manager }}"><img class="inline-icon" src="{{ STATIC_URL }}img/mail.svg" alt="Email"/></a></dd>
+            {% endif %}
+        </dl>
+{% endblock main-content-col %}

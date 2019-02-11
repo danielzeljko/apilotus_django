@@ -1,0 +1,305 @@
+/**** for pc ***/
+@media only screen and ( min-device-width: 768px ) {
+    .for_mobile
+    {
+        display: none;
+    }
+    
+    .a_for_search
+    {
+        display: inline-table;
+    }
+}
+/*** for mobile ***/
+@media only screen and ( max-device-width: 768px ) {
+    .for_pc
+    {
+        display: none;
+    }
+
+    .a_mobile_crm_div
+    {
+        text-align: center !important;
+        padding: 5px;
+    }
+
+    .a_for_search
+    {
+        display: table;
+        padding: 5px 0px;
+        width: 250px !important;
+    }
+
+    .a_for_search_top
+    {
+        display: table;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+
+    .a_for_search_top .calendar_label
+    {
+        border: none;
+    }
+
+    .a_for_search_top input
+    {
+        width: 250px;
+    }
+
+    .a_for_search button
+    {
+        width: 100% !important;
+    }
+}
+
+/**** for pc ***/
+@media only screen and ( min-device-width: 390px ) {
+    .a_less_than_390
+    {
+        display: none;
+    }
+}
+@media only screen and ( max-device-width: 390px ) {
+    .a_less_than_390
+    {
+        display: block;
+    }
+}
+
+.overall_dv
+{
+    margin: 0px;
+}
+
+.overall_dv>div.overall_tlt
+{
+    background: #f9f9f9;
+    color: #3f3f3f;
+}
+
+.overall_dv>div
+{
+    border-bottom: 1px solid #dddddd;
+    padding: 5px 0px 5px 10%;
+}
+
+table.dataTable thead .sorting:after
+{
+    content : ""!important;
+}
+
+table.dataTable thead .sorting
+{
+    background-image: none !important;
+}
+
+table.dataTable thead .sorting_asc:after
+{
+    content: '' !important;
+}
+
+table.dataTable thead .sorting_asc
+{
+    background-image: none !important;
+}
+
+.a_dt
+{
+    border: none !important;
+}
+
+.a_dt thead tr
+{
+    background: #f9f9f9 !important;
+}
+
+.a_dt th
+{
+    border-top: 1px solid #ddd !important;
+    border-bottom: 1px solid #ddd !important;
+    color: #3f3f3f !important;
+    font-weight: normal !important;
+    font-size: 13px !important;
+    font-family: 'Varela Round', sans-serif !important;
+}
+
+.a_dt tbody tr:first-child td
+{
+    border-top: none !important;
+}
+
+.a_dt td
+{
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+.a_no_border_top
+{
+    border-top: none !important;
+}
+
+.a_border_right
+{
+    border-right: 1px solid #ddd !important;
+}
+
+.a_dsb_no_spn
+{
+    padding-left: 20px!important;
+}
+
+.g_none_dis
+{
+    display: none !important;
+}
+
+.a_no_lr_margin
+{
+    margin-left: 0px!important;
+    margin-right: 0px!important;
+}
+
+.a_no_lr_margin>div
+{
+    margin-bottom: 0px !important;
+    border: none !important;
+}
+
+#a_crm_list_tb
+{
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+}
+
+table.dataTable.dtr-inline.collapsed>tbody>tr[role="row"]>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr[role="row"]>th:first-child:before
+{
+    content: '\02C5' !important;
+    background: none !important;
+    color: gray !important;
+    line-height: unset !important;
+}
+
+table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th:first-child:before
+{
+    content: ' \02C4' !important;
+    background: none !important;
+    color: gray !important;
+    line-height: unset !important;
+}
+
+.dataTables_empty
+{
+    display: none !important;
+}
+
+.c_comp_sel_tlt
+{
+    font-size: 14px;
+    font-weight: normal;
+    text-transform: uppercase;
+    color: rgba(100, 100, 100, 1);
+    padding-left: 0px;
+    font-size: 13.5px;
+}
+
+.c_comp_list_dv
+{
+    padding: 0px 0px 0px 0px;
+    border: 1px solid silver;
+    overflow-x: hidden;
+    border-radius: 3px;
+    box-shadow: 1px 1px 1px rgba(200, 200, 200, 0.3);
+}
+
+.c_comp_list_sub_dv
+{
+    height: 150px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.c_selected_comps_hdv
+{
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
+
+.c_selected_comps_hdv>div
+{
+    padding: 5px;
+    background: rgba(200, 200, 200, 0.2);
+    font-size: 13.5px;
+    border-bottom: 1px solid rgba(100, 100, 100, 0.3);
+}
+
+.c_selected_comps_hdv>div>input[type='checkbox']
+{
+    margin-top: 0px !important;
+}
+
+.c_comp_sel_top_dv
+{
+    display: none;
+    margin: 5px 0px;
+}
+
+.c_selected_comps_dv>div
+{
+    padding-left: 2px !important;
+    padding-right: 1px !important;
+}
+
+.c_selected_comps_dv
+{
+    margin-left: 0px !important;
+    margin-right: 0px !important;
+}
+
+.c_offer_table th,
+.c_offer_table td
+{
+    text-align: left !important;
+    padding-left: 5px;
+}
+
+.c_comp_avi_tlt
+{
+    display: none;
+    padding-top: 5px;
+}
+
+.c_avai_top_dv
+{
+    display: none;
+    border: 1px solid silver;
+    margin: 0px;
+    border-radius: 3px;
+}
+
+.c_available_items_list
+{
+    max-height: 200px;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.c_available_items_list .row>div
+{
+    padding-left: 5px !important;
+}
+
+.c_avai_th_dv>div
+{
+    padding: 5px;
+    background: rgba(200, 200, 200, 0.2);
+    font-size: 13.5px;
+    border-bottom: 1px solid rgba(100, 100, 100, 0.3);
+}
+
+.campaign_select_all
+{
+    margin-top: 0px !important;
+}

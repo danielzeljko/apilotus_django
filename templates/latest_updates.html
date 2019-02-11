@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% load thumbnail %}
+
+{% block page_title %}
+    Latest Updates - {{ block.super }}
+{% endblock page_title %}
+
+{% block meta_description %}All of the latest updates from our blogs, podcasts and photo galleries.{% endblock meta_description %}
+
+{% block main-content-col %}
+<h1>Latest Updates</h1>
+
+<h2>Blog Posts</h2>
+<ul class="lu-blog-list latest-updates-list media-list unstyled-list">
+	{% for p in blog_posts|slice:":10" %}
+	<li class="media-block">
+		<a href="{{ p.get_absolute_url }}" title="{{ p }}">
+			{% thumbnail p.main_image "300x300" crop="center" as main_image %}
+			<img src="{{ main_image.url }}" alt="" />
+			{% endthumbnail %}
+			<span class="media-block-title">{{ p }}</span>
+		</a>
+		
+        <span class="metadata">
+        	<time pubdate class="pub-date" datetime="{{ p.published|date:"c" }}">{{ p.published|date:"F j" }}</time> 
+        </span><!-- end post-data -->
+        {% comment %}<p class="post-brief-content">{{ p.content_html|safe|escape|striptags|truncatechars:135 }}</p>{% endcomment %}
+	</li>
+{% endfor %}
+</ul>
+<a class="btn-default btn-block btn" href="{% url "podblogs_blog_list" %}" title="Blogs">All Blogs</a>
+
+<h2>Podcast Episodes</h2>
+<ul class="lu-podcast-list latest-updates-list media-list unstyled-list">
+	{% for e in podcast_episodes|slice:":10" %}
+	<li class="media-block">
+		<a href="{{ e.get_absolute_url }}" title="{{ e }}">
+			{% thumbnail e.main_image "300x300" crop="15% 10%" as main_image %}
+			<img src="{{ main_image.url }}" alt="" />
+			{% endthumbnail %}
+		
+	        <span class="media-block-title">{{ e }}</span>
+	    </a>
+	    <span class="metadata">
+	    	<time pubdate class="pub-date" datetime="{{ e.published|date:"c" }}">{{ e.published|date:"F j" }}</time>
+	    </span>
+	</li>
+{% endfor %}
+</ul>
+<a class="btn-default btn-block btn" href="{% url "podblogs_podcast_list" %}" title="Podcasts">All Podcasts</a>
+
+<h2>Photo Galleries</h2>
+
+<ul class="gallery-list unstyled-list">
+{% for g in galleries|slice:":5" %}
+    <li>
+        <a href="{{ g.get_absolute_url }}" title="">
+        	<h3 class="lu-gallery-title">{{ g.name }}</h3>
+	        <ul class="gallery">
+	    		{% thumbnail g.cover.media "250x167" crop="15% 10%" as cover %}
+	        	<li><img src="{{ cover.url }}" alt=""></li>
+	        	{% endthumbnail %}
+	        	{% for media_item in g.no_cover|slice:":2" %}
+			    <li>
+		            {% thumbnail media_item.media "250x167" crop="15% 10%" as thumb %}
+		            <img src="{{ thumb.url }}" alt="">
+		            {% endthumbnail %}
+			    </li>
+			    {% endfor %}
+			</ul>
+		</a>
+		<div>
+	        <ul class="metadata horizontal unstyled-list">
+	        	<li>{{ g.media.all|length }} photos</li>
+	        	<li><time datetime="{{ g.created|date:"c" }}">Created on {{ g.created|date:"F j" }}</time></li>
+	    	</ul>
+			<a class="btn btn-default" href="{{ g.get_absolute_url }}" title="">View Gallery</a>
+	    </div>
+    </li>
+{% endfor %}
+</ul>
+<a class="btn-default btn-block btn" href="{% url "mediagal_gallery_list" %}" title="Photo Galleries">All Photo Galleries</a>
+
+{% comment %}
+<h2>Texting Campaigns</h2>
+{% if texting_campaigns %}
+{% for c in texting_campaigns %}
+	{{ c }}
+{% endfor %}
+{% else %}
+
+{% endif %}
+{% endcomment %}
+
+{% endblock %}
