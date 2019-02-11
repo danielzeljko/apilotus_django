@@ -1,0 +1,26 @@
+{% load static %}
+<nav class="navbar navbar-default navbar-fixed-top main_navbar">
+    <div class="container-fluid" style="margin:0; padding: 0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".bs-navbar-collapse" style="margin-top: 20px">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <img class="logo_navbar visible-xs hidden-sm visible-md visible-lg" src="{% static 'images/banner_left.png' %}" />
+            <img class="logo_navbar hidden-xs visible-sm hidden-md hidden-lg" src="{% static 'images/banner_left_small.png' %}" />
+        </div>
+        <div class="collapse navbar-collapse bs-navbar-collapse" style="padding-top:22px; padding-right: 20px">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Dashboard" or tab_name == "Affiliate" or tab_name == "Retention" or tab_name == "Sales" or tab_name == "Alerts" or tab_name == "Accounts" or tab_name == "Affiliate Management" or tab_name == "Alert Percentage Levels" or tab_name == "Campaign Management" or tab_name == "Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">LIMELIGHT CRM <span class="caret"></span></a>
+                    <ul class="dropdown-menu crm_setting_dropdown" role="menu">
+                        <li><a class="crm_tab_label{% if tab_name == "Dashboard" %} active{% endif %} small" href="{% url 'dashboard' %}">Dashboard</a></li>
+                    </ul>
+                </li>
+                <li class="visible-xs hidden-sm hidden-md visible-lg"><a class="crm_tab_label{% if tab_name == "Dashboard" %} active"{% endif %} href="{% url 'dashboard' %}">DASHBOARD</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>

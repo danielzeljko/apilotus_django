@@ -26,13 +26,14 @@ urlpatterns = [
     url(r'^jet/', include('jet.urls', 'jet')),
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
 
-    url(r'^admin/', admin.site.urls),
+    url(r'^apilotus-admin/', admin.site.urls),
 
     url(r'^rosetta/', include('rosetta.urls')),
 
     path('i18n/', include('django.conf.urls.i18n')),
 
     url(r'^accounts/', include('lotus_auth.urls')),
+    url(r'^admin/', include('dashboard.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

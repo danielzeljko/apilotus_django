@@ -83,7 +83,8 @@ def login(request, template_name='lotus_auth/login.html', redirect_field_name=RE
 
             next_redirect = _get_login_redirect_url(request, redirect_to)
 
-            return HttpResponseRedirect("{}?nocache=1&authenticationsuccess=1".format(next_redirect))
+            # return HttpResponseRedirect("{}?nocache=1&authenticationsuccess=1".format(next_redirect))
+            return HttpResponseRedirect("{}".format(next_redirect))
     else:
         form = authentication_form(request=request)
 

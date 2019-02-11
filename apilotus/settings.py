@@ -150,8 +150,8 @@ AUTH_PASSWORD_VALIDATORS = [
 #     }
 # }
 
-MODELTRANSLATION_TRANSLATION_FILES = ('lotus_auth.translation',)
-MODELTRANSLATION_TRANSLATION_REGISTRY = 'matau.translation'
+# MODELTRANSLATION_TRANSLATION_FILES = ('lotus_auth.translation',)
+# MODELTRANSLATION_TRANSLATION_REGISTRY = 'matau.translation'
 
 CONSTANCE_CONFIG = OrderedDict([
     ('Telephone', ('', '')),
@@ -276,7 +276,7 @@ MINIMUM_USER_AGE = 13
 
 ########## AUTH CONFIGURATION
 AUTH_USER_MODEL = 'lotus_auth.LotusUser'
-LOGIN_REDIRECT_URL = '/accounts/profile/'
+LOGIN_REDIRECT_URL = '/admin/dashboard/'
 # This is a custom Admin site URL used to replace the easily guessable /admin
 MWC_ADMIN_URL = os.environ.get('LOTUS_ADMIN_URL', 'admin-lotus/')
 # Password reset should be expired after 24 hours
