@@ -17,6 +17,7 @@ from django.conf.urls import url, include
 from django.urls import path
 from django.contrib import admin
 from django.conf.urls.static import static
+from django.views.generic import RedirectView
 
 from apilotus import settings
 from apps.lotus_auth import *
@@ -34,6 +35,9 @@ urlpatterns = [
 
     url(r'^accounts/', include('lotus_auth.urls')),
     url(r'^admin/', include('lotus_dashboard.urls')),
+    url(r'^alert/', include('lotus_alert.urls')),
+
+    url(r'^$', RedirectView.as_view(url='accounts/login', permanent=False)),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

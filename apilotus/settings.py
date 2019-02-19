@@ -62,6 +62,7 @@ LOCAL_APPS = [
     'notifications',
     'loci',
     'lotus_dashboard',
+    'lotus_alert',
 ]
 
 THIRD_PARTY_APPS = [
