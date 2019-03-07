@@ -29,16 +29,16 @@
                         {% if request.user|check_enable_menu:'41,42,43,44' %}
                         <li role="presentation" class="divider"></li>
                         {% if request.user|check_enable_menu:'41' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Client Setup" %} active{% endif %} small" href="{% url 'setting_crm' %}">Client Setup</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Client Setup" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/crmaccount/">Client Setup</a></li>
                         {% endif %}
                         {% if request.user|check_enable_menu:'42' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Campaign Management" %} active{% endif %} small" href="{% url 'setting_campaign' %}">Campaign Management</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Campaign Management" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/labelcampaign/">Campaign Management</a></li>
                         {% endif %}
                         {% if request.user|check_enable_menu:'43' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Alert Percentage Levels" %} active{% endif %} small" href="{% url 'setting_alert' %}">Alert Percentage Levels</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Alert Percentage Levels" %} active{% endif %} small" href="/apilotus-admin/lotus_alert/">Alert Percentage Levels</a></li>
                         {% endif %}
                         {% if request.user|check_enable_menu:'44' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Accounts" %} active{% endif %} small" href="{% url 'setting_accounts' %}">User Accounts Setting</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Accounts" %} active{% endif %} small" href="/apilotus-admin/lotus_auth/lotususer/">User Accounts Setting</a></li>
                         {% endif %}
                         {% endif %}
                     </ul>
@@ -64,16 +64,16 @@
                     <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Accounts" or tab_name == "Affiliate Management" or tab_name == "Alert Percentage Levels" or tab_name == "Campaign Management" or tab_name == "Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">SETTINGS <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                     {% if request.user|check_enable_menu:'41' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Client Setup" %} active{% endif %} small" href="{% url 'setting_crm' %}">Client Setup</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Client Setup" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/crmaccount/">Client Setup</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'42' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Campaign Management" %} active{% endif %} small" href="{% url 'setting_campaign' %}">Campaign Management</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Campaign Management" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/labelcampaign/">Campaign Management</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'43' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Alert Percentage Levels" %} active{% endif %} small" href="{% url 'setting_alert' %}">Alert Percentage Levels</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Alert Percentage Levels" %} active{% endif %} small" href="/apilotus-admin/lotus_alert/">Alert Percentage Levels</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'44' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Accounts" %} active{% endif %} small" href="{% url 'setting_accounts' %}">User Accounts Setting</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Accounts" %} active{% endif %} small" href="/apilotus-admin/lotus_auth/lotususer/">User Accounts Setting</a></li>
                     {% endif %}
                     </ul>
                 </li>
@@ -143,7 +143,7 @@
                     <ul class="dropdown-menu dropdown-menu-right crm_setting_dropdown" role="menu">
                         <li class="crm_tab_left"><a class="crm_tab_label small" href="#" style="background: #f9f9f9 !important; color: #00b9ab !important"><b><?php echo $userEmail; ?></b><br/><?php echo $user_name; ?></a></li>
                         {% if request.user|check_enable_menu:'11' %}
-                        <li class="crm_tab_left"><a class="crm_tab_label small" href="{% url 'setting_accounts' %}">My Profile</a></li>
+                        <li class="crm_tab_left"><a class="crm_tab_label small" href="/apilotus-admin/lotus_auth/lotususer/">My Profile</a></li>
                         {% endif %}
                         {% if request.user|check_enable_menu:'12' %}
                         <li class="crm_tab_left"><a class="crm_tab_label small" href="{% url 'setting_payment' %}">Payment Management</a></li>

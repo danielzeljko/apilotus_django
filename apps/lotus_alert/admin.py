@@ -9,6 +9,8 @@ class AlertTypeAdmin(admin.ModelAdmin):
 
 
 class AlertSettingAdmin(admin.ModelAdmin):
+    list_filter = ['crm']
+
     list_display = ['crm', 'type', 'value1', 'value2']
 
 

@@ -14,6 +14,32 @@ class DashboardColumn(models.Model):
         ordering = ['pk']
 
 
+class BlockedIP(models.Model):
+    ip = models.CharField(max_length=15)
+    description = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = _('Blocked IP')
+        verbose_name_plural = _('Blocked IPs')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.ip
+
+
+class Label(models.Model):
+    name = models.CharField(max_length=32)
+    type = models.IntegerField()
+
+    class Meta:
+        verbose_name = _('Label')
+        verbose_name_plural = _('Labels')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.name
+
+
 class CrmAccountManager(models.Manager):
 
     def active_crm_accounts(self, permissions=None):
@@ -23,6 +49,14 @@ class CrmAccountManager(models.Manager):
         if permissions:
             return self.filter(paused=False).filter(pk__in=permissions)
         return self.filter(paused=False)
+
+    def crm_accounts(self, permissions=None):
+        """
+        Returns all crm accounts
+        """
+        if permissions:
+            return self.filter(pk__in=permissions)
+        return self.all()
 
 
 class CrmAccount(models.Model):
@@ -40,26 +74,13 @@ class CrmAccount(models.Model):
 
     objects = CrmAccountManager()
 
-    def __str__(self):
-        return self.crm_name
-
     class Meta:
         verbose_name = _('CRM Account')
         verbose_name_plural = _('CRM Accounts')
         ordering = ['pk']
 
-
-class Label(models.Model):
-    name = models.CharField(max_length=32)
-    type = models.IntegerField()
-
     def __str__(self):
-        return self.name
-
-    class Meta:
-        verbose_name = _('Atomic Label')
-        verbose_name_plural = _('Atomic Labels')
-        ordering = ['pk']
+        return self.crm_name
 
 
 class CrmResultManager(models.Manager):
@@ -98,10 +119,65 @@ class CrmResult(models.Model):
 
     objects = CrmResultManager
 
-    def __str__(self):
-        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name + (' - ' + self.label.name if self.label else '')
-
     class Meta:
         verbose_name = _('CRM Result')
         verbose_name_plural = _('CRM Results')
         ordering = ['pk']
+
+    def __str__(self):
+        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name + (' - ' + self.label.name if self.label else '')
+
+
+class LabelGoal(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True, blank=True)
+    goal = models.IntegerField(default=0)
+    visible = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = _('Label Goal')
+        verbose_name_plural = _('Label Goals')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.crm.crm_name + '-' + self.label.name + '-' + str(self.goal)
+
+
+CAMPAIGN_TYPE = (
+    (1, 'Step1'),
+    (2, 'Step2'),
+    (3, 'Prepaids'),
+    (4, 'Tablet'),
+)
+
+CAMPAIGN_FORMAT = (
+    (1, 'Step1'),
+    (2, 'Step2'),
+    (5, 'Desktop'),
+    (6, 'Mobile'),
+)
+
+
+class LabelCampaign(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    campaign_id = models.IntegerField()
+    campaign_name = models.CharField(max_length=128)
+    campaign_type = models.IntegerField(choices=CAMPAIGN_TYPE, null=True, blank=True)
+    campaign_format = models.IntegerField(choices=CAMPAIGN_FORMAT, null=True, blank=True)
+    label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Label Campaign')
+        verbose_name_plural = _('Label Campaigns')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.crm.crm_name + '-' + str(self.campaign_id)
+
+    def campaign_label(self):
+        campaign_type = dict(CAMPAIGN_TYPE)[self.campaign_type] if self.campaign_type else ''
+        campaign_format = dict(CAMPAIGN_FORMAT)[self.campaign_format] if self.campaign_format else ''
+        label = self.label.name if self.label else ''
+        if campaign_type or campaign_format or label:
+            return ' '.join([campaign_type, campaign_format, label])
+        return ''

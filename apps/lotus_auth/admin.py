@@ -39,9 +39,12 @@ class CustomUserAdmin(UserAdmin):
             }
         ),
     )
-    list_display = ['username', 'display_name', 'email', 'sms', 'email', 'bot', 'is_staff']
+    list_display = ['username', 'display_name', 'sms', 'email', 'bot', 'user_role', 'status', 'is_staff']
     search_fields = ('email', 'username', 'display_name')
     # ordering = ('-is_staff', 'username',)
+
+    def status(self, obj):
+        return 'ENABLE' if obj.user_status else ''
 
 
 if HIJACK_INSTALLED:

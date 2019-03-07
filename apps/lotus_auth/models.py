@@ -101,7 +101,7 @@ class LotusUser(AbstractBaseUser):
     crm_positions = models.CharField(max_length=100, null=True, blank=True)
     page_permissions = models.CharField(max_length=100, null=True, blank=True)
 
-    user_status = models.IntegerField(blank=False, default=1)
+    user_status = models.BooleanField(default=1)
     user_role = models.CharField(
         max_length=5,
         choices=[("admin", "Admin"), ("user", "User")],

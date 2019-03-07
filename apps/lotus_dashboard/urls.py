@@ -6,10 +6,7 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
     url(r'^dashboard/$', views.dashboard, name='report_initial'),
     url(r'^dashboard/$', views.dashboard, name='report_rebill'),
-    url(r'^dashboard/$', views.dashboard, name='setting_crm'),
     url(r'^dashboard/$', views.dashboard, name='setting_campaign'),
-    url(r'^dashboard/$', views.dashboard, name='setting_alert'),
-    url(r'^dashboard/$', views.dashboard, name='setting_accounts'),
     url(r'^dashboard/$', views.dashboard, name='cap_update'),
     url(r'^dashboard/$', views.dashboard, name='cap_offers'),
     url(r'^dashboard/$', views.dashboard, name='cap_affiliates'),
@@ -20,12 +17,19 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard, name='setting_payment'),
     url(r'^dashboard/$', views.dashboard, name='logout'),
 
-    url(r'^ajax_dashboard_columns_get/$', views.view_dashboard_columns_get, name='url_dashboard_columns_get'),
-    url(r'^ajax_crm_list/$', views.view_crm_list, name='url_crm_list'),
-    url(r'^ajax_dashboard_sales_all/$', views.view_dashboard_sales_all, name='url_dashboard_sales_all'),
-    url(r'^ajax_setting_crm_goal/$', views.view_setting_crm_goal, name='url_setting_crm_goal'),
-    url(r'^ajax_setting_crm_edit/$', views.view_setting_crm_edit, name='url_setting_crm_edit'),
-    url(r'^ajax_crm_position_set/$', views.view_crm_position_set, name='url_ajax_crm_position_set'),
+    url(r'^ajax_dashboard_columns_get/$', views.ajax_dashboard_columns_get, name='url_dashboard_columns_get'),
 
-    url(r'^get_dashboard_sales/$', views.view_get_dashboard_sales),
+    url(r'^ajax_crm_list/$', views.ajax_crm_list, name='url_crm_list'),
+    url(r'^ajax_setting_crm_list/$', views.ajax_setting_crm_list, name='url_setting_crm_list'),
+    url(r'^ajax_setting_crm_add/$', views.ajax_setting_crm_add, name='url_setting_crm_add'),
+    url(r'^ajax_setting_crm_edit/$', views.ajax_setting_crm_edit, name='url_setting_crm_edit'),
+    url(r'^ajax_setting_crm_delete/$', views.ajax_setting_crm_delete, name='url_setting_crm_delete'),
+    url(r'^ajax_setting_crm_goal/$', views.ajax_setting_crm_goal, name='url_setting_crm_goal'),
+    url(r'^ajax_crm_position_set/$', views.ajax_crm_position_set, name='url_crm_position_set'),
+
+    url(r'^ajax_dashboard_sales_all/$', views.ajax_dashboard_sales_all, name='url_dashboard_sales_all'),
+    url(r'^get_dashboard_sales/$', views.ajax_get_dashboard_sales),
+
+
+    url(r'^update_campaigns/$', views.view_update_campaigns),
 ]

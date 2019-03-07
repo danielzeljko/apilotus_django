@@ -280,7 +280,7 @@ MINIMUM_USER_AGE = 13
 AUTH_USER_MODEL = 'lotus_auth.LotusUser'
 LOGIN_REDIRECT_URL = '/admin/dashboard/'
 # This is a custom Admin site URL used to replace the easily guessable /admin
-MWC_ADMIN_URL = os.environ.get('LOTUS_ADMIN_URL', 'admin-lotus/')
+LOTUS_ADMIN_URL = os.environ.get('LOTUS_ADMIN_URL', 'apilotus-admin/')
 # Password reset should be expired after 24 hours
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 ########## END AUTH CONFIGURATION
