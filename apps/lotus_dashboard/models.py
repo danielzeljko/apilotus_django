@@ -83,6 +83,20 @@ class CrmAccount(models.Model):
         return self.crm_name
 
 
+class CrmToken(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    token = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('CRM Token')
+        verbose_name_plural = _('CRM Tokens')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.crm.crm_name + ' - ' + self.token
+
+
 class CrmResultManager(models.Manager):
 
     def check_crm_result(self, crm, from_date, to_date):
@@ -102,20 +116,19 @@ class CrmResult(models.Model):
     goal = models.IntegerField()
     step1 = models.IntegerField()
     step2 = models.IntegerField()
+    step1_nonpp = models.IntegerField()
+    step2_nonpp = models.IntegerField()
+    prepaids = models.IntegerField()
+    prepaids_step1 = models.IntegerField()
+    prepaids_step2 = models.IntegerField()
     tablet_step1 = models.IntegerField()
     tablet_step2 = models.IntegerField()
-    prepaid = models.IntegerField()
-    step1_non_prepaid = models.IntegerField()
-    step2_non_prepaid = models.IntegerField()
-    order_page = models.FloatField()
     order_count = models.IntegerField()
-    decline = models.IntegerField()
+    order_page = models.FloatField()
+    declined = models.IntegerField()
     gross_order = models.IntegerField()
-    prepaid_step1 = models.IntegerField()
-    prepaid_step2 = models.IntegerField()
 
     created_at = models.DateTimeField(verbose_name=_('Created at'), auto_now_add=True)
-    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
 
     objects = CrmResultManager
 
@@ -174,6 +187,7 @@ class LabelCampaign(models.Model):
     def __str__(self):
         return self.crm.crm_name + '-' + str(self.campaign_id)
 
+    @property
     def campaign_label(self):
         campaign_type = dict(CAMPAIGN_TYPE)[self.campaign_type] if self.campaign_type else ''
         campaign_format = dict(CAMPAIGN_FORMAT)[self.campaign_format] if self.campaign_format else ''

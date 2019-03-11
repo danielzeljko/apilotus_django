@@ -131,15 +131,16 @@ jQuery(document).ready(function(t) {
 
                                     let step1 = parseFloat(sales[i]['step1']);
                                     let step2 = parseFloat(sales[i]['step2']);
+                                    let step1_nonpp = parseFloat(sales[i]['step1_nonpp']);
+                                    let step2_nonpp = parseFloat(sales[i]['step2_nonpp']);
+                                    let prepaid = parseFloat(sales[i]['prepaids']);
+                                    let prepaid_step1 = parseFloat(sales[i]['prepaids_step1']);
+                                    let prepaid_step2 = parseFloat(sales[i]['prepaids_step2']);
                                     let tablet = parseFloat(sales[i]['tablet_step1']);
-                                    let prepaid = parseFloat(sales[i]['step1']);
-                                    let prepaid_step1 = parseFloat(sales[i]['prepaid_step1']);
-                                    let prepaid_step2 = parseFloat(sales[i]['prepaid_step2']);
-                                    let step1_nonpp = parseFloat(sales[i]['step1_non_prepaid']);
-                                    let step2_nonpp = parseFloat(sales[i]['step2_non_prepaid']);
-                                    let order_page = parseFloat(sales[i]['order_page']);
+                                    let tablet_step2 = parseFloat(sales[i]['tablet_step2']);
                                     let order_count = parseFloat(sales[i]['order_count']);
-                                    let decline = parseFloat(sales[i]['decline']);
+                                    let order_page = parseFloat(sales[i]['order_page']);
+                                    let decline = parseFloat(sales[i]['declined']);
                                     let gross_order = parseFloat(sales[i]['gross_order']);
                                     let timestamp = sales[i]['updated_at'];
 

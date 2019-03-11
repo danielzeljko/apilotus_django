@@ -14,3 +14,4 @@ django-localflavor==1.4.1
 geopy==1.11.0
 django-widget-tweaks==1.4.2
 requests
+lxml

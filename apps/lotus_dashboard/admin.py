@@ -37,6 +37,7 @@ class LabelCampaignAdmin(admin.ModelAdmin):
 admin.site.register(DashboardColumn, DashboardColumnAdmin)
 admin.site.register(BlockedIP, BlockedIPAdmin)
 admin.site.register(CrmAccount, CrmAccountAdmin)
+admin.site.register(CrmToken)
 admin.site.register(CrmResult)
 admin.site.register(Label, LabelAdmin)
 admin.site.register(LabelGoal, LabelGoalAdmin)

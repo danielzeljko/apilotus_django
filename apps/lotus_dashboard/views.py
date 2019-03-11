@@ -9,6 +9,7 @@ from lotus_dashboard.models import *
 from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns
 
 from apilotus import settings
+from utils.llcrmhook import LLCRMHook
 
 
 @login_required
@@ -157,8 +158,8 @@ def ajax_dashboard_sales_all(request):
     return JsonResponse(crm_results, safe=False)
 
 
-def ajax_get_dashboard_sales(request):
-    task_get_dashboard_sales()
+def view_get_dashboard_sales(request):
+    task_get_dashboard_sales('03/04/2019', '03/09/2019')
 
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 

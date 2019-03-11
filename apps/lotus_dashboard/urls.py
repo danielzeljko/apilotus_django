@@ -28,8 +28,7 @@ urlpatterns = [
     url(r'^ajax_crm_position_set/$', views.ajax_crm_position_set, name='url_crm_position_set'),
 
     url(r'^ajax_dashboard_sales_all/$', views.ajax_dashboard_sales_all, name='url_dashboard_sales_all'),
-    url(r'^get_dashboard_sales/$', views.ajax_get_dashboard_sales),
 
-
+    url(r'^get_dashboard_sales/$', views.view_get_dashboard_sales),
     url(r'^update_campaigns/$', views.view_update_campaigns),
 ]
