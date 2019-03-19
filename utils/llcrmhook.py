@@ -14,7 +14,7 @@ class LLCRMHook(object):
         self.token = ''
 
         self.prospect_url = (self.crm_url + '/admin/report/custom/index.php?r=7&test_flag=0&from_date={}&to_date={}').format
-        self.retention_url = (self.crm_url + '/admin/report/custom/index.php?r=8&test_flag=0&from_date={}&to_date={}&rebill_depth={}&aff=0').format
+        self.retention_url = (self.crm_url + '/admin/report/custom/index.php?r=8&test_flag=0&from_date={}&to_date={}&rebill_depth={}&aff={}').format
 
         self.login()
 
@@ -46,7 +46,7 @@ class LLCRMHook(object):
 
     def get_crm_sales(self, from_date, to_date):
         prospects = self.get_prospect_report(from_date, to_date)
-        retentions, cycle = self.get_retention_report(from_date, to_date, 1)
+        retentions = self.get_retention_report(from_date, to_date, 1)
 
         campaign_step1 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=1)
         campaign_step2 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=2)
@@ -181,31 +181,119 @@ class LLCRMHook(object):
 
         return results
 
-    def get_retention_report(self, from_date, to_date, cycle):
+    def get_retention_report(self, from_date, to_date, cycle=1):
         headers = {
             'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
             'referer': self.crm_url + '/admin/report/custom/index.php?r=8',
         }
-        response = requests.get(self.retention_url(from_date, to_date, cycle), headers=headers)
+        response = requests.get(self.retention_url(from_date, to_date, cycle, 0), headers=headers)
         if str(response.text).__contains__('No results exist at this time.'):
-            return [], 0
+            return []
+        data = fromstring(response.text)
+
+        cycle_count = data.xpath('//div[@class="list-data"]/table/tr[1]/td/text()')
+        if 2 == cycle and len(cycle_count) == 2:
+            cycle_count = 2
+        else:
+            cycle_count = 1
+
+        retentions = data.xpath('//div[@class="list-data"]/table/tr')[2:-1]
+        results = []
+        for retention in retentions:
+            campaign_id = retention.xpath('.//td[1]/text()')[0].split(')')[0][1:]
+            data = {
+                'campaign_id': int(self.parse_value(campaign_id)),
+                'campaign_name': retention.xpath('.//td[1]/text()')[0].replace('(' + campaign_id + ')', '').strip(),
+                'gross_orders': int(self.parse_value(retention.xpath('.//td[2]/text()')[0])),
+                'net_approved': int(self.parse_value(retention.xpath('.//td[3]/text()')[0])),
+                'subscriptions_approved': int(self.parse_value(retention.xpath('.//td[4]/text()')[0])),
+                'declined': int(self.parse_value(retention.xpath('.//td[5]/text()')[0])),
+                'void_full_refund': int(self.parse_value(retention.xpath('.//td[6]/text()')[0])),
+                'partial_refund': int(self.parse_value(retention.xpath('.//td[7]/text()')[0])),
+                'void_refund_revenue': float(self.parse_value(retention.xpath('.//td[8]/text()')[0])),
+                'canceled': int(self.parse_value(retention.xpath('.//td[9]/text()')[0])),
+                'hold': int(self.parse_value(retention.xpath('.//td[10]/text()')[0])),
+                'pending': int(self.parse_value(retention.xpath('.//td[11]/text()')[0])),
+                'approval_rate': float(self.parse_value(retention.xpath('.//td[12]/text()')[0])),
+                'net_revenue': float(self.parse_value(retention.xpath('.//td[13]/text()')[0])),
+            }
+            if 1 == cycle_count:
+                data['has_affiliate'] = True if retention.xpath('.//td[14]/.//a/text()') else False
+            else:
+                data['gross_orders1'] = int(self.parse_value(retention.xpath('.//td[14]/text()')[0]))
+                data['net_approved1'] = int(self.parse_value(retention.xpath('.//td[15]/text()')[0]))
+                data['declined1'] = int(self.parse_value(retention.xpath('.//td[16]/text()')[0]))
+                data['void_full_refund1'] = int(self.parse_value(retention.xpath('.//td[17]/text()')[0]))
+                data['partial_refund1'] = int(self.parse_value(retention.xpath('.//td[18]/text()')[0]))
+                data['void_refund_revenue1'] = float(self.parse_value(retention.xpath('.//td[19]/text()')[0]))
+                data['canceled1'] = int(self.parse_value(retention.xpath('.//td[20]/text()')[0]))
+                data['hold1'] = int(self.parse_value(retention.xpath('.//td[21]/text()')[0]))
+                data['pending1'] = int(self.parse_value(retention.xpath('.//td[22]/text()')[0]))
+                data['approval_rate1'] = float(self.parse_value(retention.xpath('.//td[23]/text()')[0]))
+                data['net_revenue1'] = float(self.parse_value(retention.xpath('.//td[24]/text()')[0]))
+                data['has_affiliate'] = True if retention.xpath('.//td[25]/.//a/text()') else False
+            results.append(data)
+        return results
+
+    def get_retention_report_by_campaign(self, from_date, to_date, cycle, campaign_id):
+        headers = {
+            'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
+            'referer': self.crm_url + '/admin/report/custom/index.php?r=8',
+        }
+        response = requests.get(self.retention_url(from_date, to_date, cycle, 1) + '&f=' + str(campaign_id), headers=headers)
+        if str(response.text).__contains__('No results exist at this time.'):
+            return []
         data = fromstring(response.text)
         retentions = data.xpath('//div[@class="list-data"]/table/tr')[2:-1]
         results = []
         for retention in retentions:
             results.append({
-                'campaign_id': int(self.parse_value(retention.xpath('.//td[1]/text()')[0].split(')')[0][1:])),
-                'campaign_name': retention.xpath('.//td[1]/text()')[0].split(')')[1].strip(),
+                'affiliate_id': retention.xpath('.//td[1]/text()')[0],
+                'affiliate_name': '',   # ??? priamry_label_affiliate(affiliate_id, crm_id, label, sales_goal)
                 'gross_orders': int(self.parse_value(retention.xpath('.//td[2]/text()')[0])),
                 'net_approved': int(self.parse_value(retention.xpath('.//td[3]/text()')[0])),
+                'subscriptions_approved': int(self.parse_value(retention.xpath('.//td[4]/text()')[0])),
+                'declined': int(self.parse_value(retention.xpath('.//td[5]/text()')[0])),
                 'void_full_refund': int(self.parse_value(retention.xpath('.//td[6]/text()')[0])),
                 'partial_refund': int(self.parse_value(retention.xpath('.//td[7]/text()')[0])),
                 'void_refund_revenue': float(self.parse_value(retention.xpath('.//td[8]/text()')[0])),
+                'canceled': int(self.parse_value(retention.xpath('.//td[9]/text()')[0])),
+                'hold': int(self.parse_value(retention.xpath('.//td[10]/text()')[0])),
+                'pending': int(self.parse_value(retention.xpath('.//td[11]/text()')[0])),
                 'approval_rate': float(self.parse_value(retention.xpath('.//td[12]/text()')[0])),
-                'has_affiliate': True if retention.xpath('.//td[14]/.//a/text()') else False,
-                'declined': int(self.parse_value(retention.xpath('.//td[5]/text()')[0])),
+                'net_revenue': float(self.parse_value(retention.xpath('.//td[13]/text()')[0])),
+                'has_sub_affiliate': True if retention.xpath('.//td[14]/.//a/text()') else False,
             })
-        return results, 1
+        return results
+
+    def get_retention_report_by_affiliate(self, from_date, to_date, cycle, campaign_id, affiliate_id):
+        headers = {
+            'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
+            'referer': self.crm_url + '/admin/report/custom/index.php?r=8&aff=1&f=' + str(campaign_id),
+        }
+        response = requests.get(self.retention_url(from_date, to_date, cycle, 1) + '&f=' + str(campaign_id) + '&sf=AFFID:' + str(affiliate_id), headers=headers)
+        if str(response.text).__contains__('No results exist at this time.'):
+            return []
+        data = fromstring(response.text)
+        retentions = data.xpath('//div[@class="list-data"]/table/tr')[2:-1]
+        results = []
+        for retention in retentions:
+            results.append({
+                'sub_affiliate_name': retention.xpath('.//td[1]/text()')[0],
+                'gross_orders': int(self.parse_value(retention.xpath('.//td[2]/text()')[0])),
+                'net_approved': int(self.parse_value(retention.xpath('.//td[3]/text()')[0])),
+                'subscriptions_approved': int(self.parse_value(retention.xpath('.//td[4]/text()')[0])),
+                'declined': int(self.parse_value(retention.xpath('.//td[5]/text()')[0])),
+                'void_full_refund': int(self.parse_value(retention.xpath('.//td[6]/text()')[0])),
+                'partial_refund': int(self.parse_value(retention.xpath('.//td[7]/text()')[0])),
+                'void_refund_revenue': float(self.parse_value(retention.xpath('.//td[8]/text()')[0])),
+                'canceled': int(self.parse_value(retention.xpath('.//td[9]/text()')[0])),
+                'hold': int(self.parse_value(retention.xpath('.//td[10]/text()')[0])),
+                'pending': int(self.parse_value(retention.xpath('.//td[11]/text()')[0])),
+                'approval_rate': float(self.parse_value(retention.xpath('.//td[12]/text()')[0])),
+                'net_revenue': float(self.parse_value(retention.xpath('.//td[13]/text()')[0])),
+            })
+        return results
 
     def parse_value(self, value):
         return value.replace('%', '').replace('$', '').replace(',', '')

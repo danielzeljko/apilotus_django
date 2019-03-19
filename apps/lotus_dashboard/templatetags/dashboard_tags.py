@@ -16,3 +16,8 @@ def check_enable_menu(user, permissions):
                 return True
         return False
     return False
+
+
+@register.filter
+def get_by_index(l, i):
+    return l[i]

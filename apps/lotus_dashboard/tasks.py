@@ -8,7 +8,7 @@ from utils.llcrmhook import LLCRMHook
 
 def task_update_campaigns():
     crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list[:2]:
+    for crm in crm_list[3:4]:
         llcrm_api = LLCRMAPI(crm.crm_url, crm.api_username, crm.api_password)
         campaigns = llcrm_api.campaigns()
         if campaigns['response_code'] != "100":
@@ -35,15 +35,20 @@ def task_update_campaigns():
 
 def task_get_dashboard_sales(from_date, to_date):
     crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list:
-        llcrmhook = LLCRMHook(crm.id)
-        crm_results = llcrmhook.get_crm_sales(from_date, to_date)
+    for crm in crm_list[1:2]:
+        llcrm_hook = LLCRMHook(crm.id)
+        crm_results = llcrm_hook.get_crm_sales(from_date, to_date)
+        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
         for result in crm_results:
-            crm_result = CrmResult()
-            crm_result.from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-            crm_result.to_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-            crm_result.crm = crm
-            crm_result.label_id = result['label_id']
+            try:
+                crm_result = CrmResult.objects.get(from_date=from_date, to_date=to_date, crm=crm, label_id=result['label_id'])
+            except CrmResult.DoesNotExist:
+                crm_result = CrmResult()
+                crm_result.from_date = from_date
+                crm_result.to_date = to_date
+                crm_result.crm = crm
+                crm_result.label_id = result['label_id']
             crm_result.goal = result['label_goal']
             crm_result.step1 = result['step1']
             crm_result.step2 = result['step2']
@@ -59,3 +64,86 @@ def task_get_dashboard_sales(from_date, to_date):
             crm_result.declined = result['declined']
             crm_result.gross_order = result['gross_order']
             crm_result.save()
+
+
+def task_get_initial_reports(from_date, to_date, cycle=1):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+
+    for crm in crm_list[1:2]:
+        results = []
+        llcrm_hook = LLCRMHook(crm.id)
+        retentions = llcrm_hook.get_retention_report(from_date, to_date)
+        campaigns = [a.campaign_id for a in LabelCampaign.objects.filter(campaign_type__isnull=False)]
+        print([a['campaign_id'] for a in retentions])
+        for retention in retentions:
+            if retention['campaign_id'] in campaigns:
+                aids = []
+                print(retention['campaign_id'])
+                if retention['has_affiliate']:
+                    aid_results = llcrm_hook.get_retention_report_by_campaign(from_date, to_date, cycle, retention['campaign_id'])
+                    for aid_result in aid_results:
+                        print(aid_result)
+                        sub_results = llcrm_hook.get_retention_report_by_affiliate(from_date, to_date, cycle, retention['campaign_id'], aid_result['affiliate_id'])
+                        print(sub_results)
+                        sub_results = [[a['sub_affiliate_name'], '', a['net_approved'], a['declined'],
+                                        '%.2f' % (a['net_approved'] * 100 / a['gross_orders'])] for a in sub_results]
+                        aids.append([[aid_result['affiliate_id'], aid_result['affiliate_name'], aid_result['net_approved'], aid_result['declined'],
+                                      '%.2f' % (aid_result['net_approved'] * 100 / aid_result['gross_orders'])], sub_results])
+                results.append([[
+                    retention['campaign_id'], retention['campaign_name'], retention['net_approved'], retention['gross_orders'],
+                    '%.2f' % (retention['net_approved'] * 100 / retention['gross_orders'])], aids])
+
+        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+        try:
+            initial_result = InitialResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+        except InitialResult.DoesNotExist:
+            initial_result = InitialResult()
+            initial_result.from_date = from_date
+            initial_result.to_date = to_date
+            initial_result.crm = crm
+        initial_result.result = str(results)
+        initial_result.save()
+
+
+def task_get_rebill_reports(from_date, to_date, cycle=2):
+    crm_list = Rebill.objects.all()
+
+    for crm in crm_list:
+        results = []
+        llcrm_hook = LLCRMHook(crm.crm_id)
+        retentions = llcrm_hook.get_retention_report(from_date, to_date, cycle)
+        rebills = [a.campaign_id for a in crm.rebills.all()]
+        for retention in retentions:
+            if retention['campaign_id'] in rebills:
+                if retention['gross_orders'] <= 10:
+                    continue
+                aids = []
+                print(retention['campaign_id'])
+                if retention['has_affiliate']:
+                    aid_results = llcrm_hook.get_retention_report_by_campaign(from_date, to_date, cycle, retention['campaign_id'])
+                    for aid_result in aid_results:
+                        if aid_result['gross_orders'] <= 10:
+                            continue
+                        print(aid_result)
+                        sub_results = llcrm_hook.get_retention_report_by_affiliate(from_date, to_date, cycle, retention['campaign_id'], aid_result['affiliate_id'])
+                        print(sub_results)
+                        sub_results = [[a['sub_affiliate_name'], '', a['net_approved'], a['declined'],
+                                        '%.2f' % (a['net_approved'] * 100 / a['gross_orders'])] for a in sub_results if a['gross_orders'] > 10]
+                        aids.append([[aid_result['affiliate_id'], aid_result['affiliate_name'], aid_result['net_approved'], aid_result['declined'],
+                                      '%.2f' % (aid_result['net_approved'] * 100 / aid_result['gross_orders'])], sub_results])
+                results.append([[
+                    retention['campaign_id'], retention['campaign_name'], retention['net_approved'], retention['gross_orders'],
+                    '%.2f' % (retention['net_approved'] * 100 / retention['gross_orders'])], aids])
+
+        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+        try:
+            rebill_result = RebillResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+        except RebillResult.DoesNotExist:
+            rebill_result = RebillResult()
+            rebill_result.from_date = from_date
+            rebill_result.to_date = to_date
+            rebill_result.crm = crm
+        rebill_result.result = str(results)
+        rebill_result.save()

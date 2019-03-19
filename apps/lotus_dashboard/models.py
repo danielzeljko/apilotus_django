@@ -128,7 +128,7 @@ class CrmResult(models.Model):
     declined = models.IntegerField()
     gross_order = models.IntegerField()
 
-    created_at = models.DateTimeField(verbose_name=_('Created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
 
     objects = CrmResultManager
 
@@ -185,7 +185,7 @@ class LabelCampaign(models.Model):
         ordering = ['pk']
 
     def __str__(self):
-        return self.crm.crm_name + '-' + str(self.campaign_id)
+        return self.crm.crm_name + ' - ' + str(self.campaign_id) + (', ' if self.campaign_label else '') + self.campaign_label
 
     @property
     def campaign_label(self):
@@ -195,3 +195,120 @@ class LabelCampaign(models.Model):
         if campaign_type or campaign_format or label:
             return ' '.join([campaign_type, campaign_format, label])
         return ''
+
+
+class OfferLabel(models.Model):
+    name = models.CharField(max_length=32)
+
+    class Meta:
+        verbose_name = _('Offer Label')
+        verbose_name_plural = _('Offer Labels')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.name
+
+
+OFFER_TYPE = (
+    (1, 'Single Step'),
+    (2, '2 Step'),
+)
+class Offer(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    name = models.CharField(max_length=128)
+    label = models.ForeignKey(OfferLabel, on_delete=models.CASCADE)
+    type = models.IntegerField(choices=OFFER_TYPE, default=1)
+    s1_payout = models.IntegerField()
+    s2_payout = models.IntegerField(null=True, blank=True)
+    step1 = models.ManyToManyField(LabelCampaign, related_name='offer_step1')
+    step2 = models.ManyToManyField(LabelCampaign, related_name='offer_step2')
+    step1_prepaids = models.ManyToManyField(LabelCampaign, related_name='offer_step1_prepaids')
+    step2_prepaids = models.ManyToManyField(LabelCampaign, related_name='offer_step2_prepaids')
+    step1_tablet = models.ManyToManyField(LabelCampaign, related_name='offer_step1_tablet', blank=True)
+    step2_tablet = models.ManyToManyField(LabelCampaign, related_name='offer_step2_tablet', blank=True)
+
+    class Meta:
+        verbose_name = _('Offer')
+        verbose_name_plural = _('Offers')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.name + ' - ' + self.crm.crm_name + '(' + str(self.crm.sales_goal) + ')'
+
+
+class Affiliate(models.Model):
+    name = models.CharField(max_length=128)
+    afid = models.CharField(max_length=128)
+    code = models.CharField(max_length=16, null=True, blank=True)
+    bot = models.CharField(max_length=16, null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Affiliate')
+        verbose_name_plural = _('Affiliates')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.name + ' - ' + self.afid
+
+
+class AffiliateOffer(models.Model):
+    affiliate = models.ForeignKey(Affiliate, on_delete=models.CASCADE)
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    goal = models.IntegerField()
+    s1_payout = models.IntegerField(null=True, blank=True)
+    s2_payout = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('Affiliate Goal')
+        verbose_name_plural = _('Affiliate Goals')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.affiliate.name + ' - ' + self.offer.name
+
+
+class InitialResult(models.Model):
+    from_date = models.DateField()
+    to_date = models.DateField()
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    result = models.TextField()
+
+    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Initial Result')
+        verbose_name_plural = _('Initial Results')
+        ordering = ['pk']
+
+    def __str__(self):
+        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name
+
+
+class Rebill(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    rebills = models.ManyToManyField(LabelCampaign, related_name='rebill')
+
+    class Meta:
+        verbose_name = _('Rebill List')
+        verbose_name_plural = _('Rebill List')
+        ordering = ['pk']
+
+    def __str__(self):
+        return str(self.crm.crm_name)
+
+
+class RebillResult(models.Model):
+    from_date = models.DateField()
+    to_date = models.DateField()
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    result = models.TextField()
+
+    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Rebill Result')
+        verbose_name_plural = _('Rebill Results')
+        ordering = ['pk']
+
+    def __str__(self):
+        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name

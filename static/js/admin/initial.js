@@ -5,53 +5,71 @@ jQuery(document).ready(function(t) {
             crm_name = t(".crm_dropdown_list").html();
         }
     }
+
     function show_alert(e) {
-        t(".rebill_alert").html(e);
-        t(".rebill_alert").fadeIn(1e3, function() {
-            t(".rebill_alert").fadeOut(3e3);
+        t(".retention_alert").html(e);
+        t(".retention_alert").fadeIn(1e3, function() {
+            t(".retention_alert").fadeOut(3e3)
         });
     }
-    function show_status(e, r, a) {
-        "list" === e && (a ? t(".rebill_waiting").html(loading_gif) : t(".rebill_waiting").html(""));
+
+    function show_waiting(e, a) {
+        "list" === e && (a ? t(".retention_waiting").html(loading_gif) : t(".retention_waiting").html(""))
     }
+
     function set_dates() {
         t("#from_date").prop("disabled", true);
         t("#to_date").prop("disabled", true);
         let cur_date = new Date;
         let formatted_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
-        if ("date_thisweek" === date_type) {
-            let r = cur_date.getDate() - 21;
+        if ("date_today" == date_type) {
+            from_date = formatted_date;
+            to_date = formatted_date;
+        }
+        else if ("date_yesterday" == date_type) {
+            cur_date.setDate(cur_date.getDate() - 1);
+            from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
+            to_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
+        }
+        else if ("date_thisweek" === date_type) {
+            let r = cur_date.getDate() + 1;
+            0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
+            cur_date.setDate(r);
+            from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
+            to_date = formatted_date;
+        } else if ("date_thismonth" == date_type) {
+            from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, 1);
+            to_date = formatted_date;
+        }
+        else if ("date_thisyear" == date_type) {
+            from_date = format_date(cur_date.getFullYear(), 1, 1);
+            to_date = formatted_date;
+        }
+        else if ("date_lastweek" == date_type) {
+            let r = cur_date.getDate() + 1 - 7;
             0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
             cur_date.setDate(r);
             from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
             r = cur_date.getDate() + 6;
             cur_date.setDate(r);
             to_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
-
-            t("#rebill_date").val(formatted_date);
-            t("#rebill_date_label").show();
-            t("#rebill_date").show();
-        } else if ("date_custom" === date_type) {
+        } else if ("date_custom" == date_type) {
             from_date = "";
             to_date = "";
-            t("#rebill_date_label").hide();
-            t("#rebill_date").hide();
             t("#from_date").prop("disabled", false);
             t("#to_date").prop("disabled", false);
         }
         t("#from_date").val(from_date);
         t("#to_date").val(to_date);
     }
+
     function format_date(year, month, date) {
         if (month < 10) month = "0" + month;
         if (date < 10) date = "0" + date;
         return month + "/" + date + "/" + year;
     }
-    function get_rebill() {
-        show_status("list", "", true);
-        t(".table_rebill_body").html("");
-        t("#id_head_sign").html(loading_gif);
-        t("#id_campaign_title").html(crm_name);
+
+    function get_initial_report() {
         if ("" == t("#from_date").val()) {
             show_alert("Please select FROM DATE.");
         }
@@ -59,22 +77,22 @@ jQuery(document).ready(function(t) {
             show_alert("Please select TO DATE.");
         }
         else {
+            show_waiting("list", !0);
             t.ajax({
                 type: "GET",
-                url: "/admin/ajax_rebill_list",
+                url: "/admin/ajax_initial_list",
                 data: {
                     crm_id: crm_id,
                     from_date: t("#from_date").val(),
                     to_date: t("#to_date").val()
                 },
                 success: function(e) {
-                    show_status("list", "", false);
-                    t("#id_head_sign").html("");
+                    show_waiting("list", !1);
                     let data = jQuery.parseJSON(e.replace(new RegExp("'", 'g'), '"'));
                     let total_length = data.length;
 
                     if (0 === total_length)
-                        return void show_alert("There is no rebill information.");
+                        return void show_alert("There is no initial information.");
 
                     let result_html = "";
                     for (let i = 0; i < total_length; i++) {
@@ -92,9 +110,9 @@ jQuery(document).ready(function(t) {
                             result_html += "<td>(" + campaign[0] + ") " + campaign[1] + "</td>";
                         }
                         result_html += '<td style="border-left: 1px solid #dadada">' + campaign[2] + "</td>";
-                        result_html += "<td>" + campaign[3] + "%" + "</td>";
-                        let color = campaign[4] < 65.0 ? 'red': campaign[4] < 80.0 ? 'yellow': 'green';
-                        result_html += '<td style="background-color: ' + color + '"><b>' + campaign[4] + '%' + '</b></td>';
+                        result_html += "<td>" + campaign[3] + "</td>";
+                        let color = campaign[4] < 60.0 ? 'yellow': 'green';
+                        result_html += '<td style="background-color: ' + color + '"><b>' + campaign[4] + '%</b></td>';
                         result_html += "</tr>";
 
                         let affiliates = data[i][1];
@@ -106,8 +124,8 @@ jQuery(document).ready(function(t) {
                             a += '<td id="affmark_' + campaign[0] + "_" + affiliate[0] + '">' + triangle_sign + "</td>";
                             a += "<td>(" + affiliate[0] + ") " + affiliate[1] + "</td>";
                             a += '<td style="border-left: 1px solid #dadada">' + affiliate[2] + "</td>";
-                            a += "<td>" + affiliate[3] + "%</td>";
-                            color = affiliate[4] < 65.0 ? 'red': affiliate[4] < 80.0 ? 'yellow': 'green';
+                            a += "<td>" + affiliate[3] + "</td>";
+                            color = affiliate[4] < 60.0 ? 'yellow': 'green';
                             a += '<td style="background-color: ' + color + '">' + affiliate[4] + '%</td>';
                             a += "</tr>";
                             result_html += a;
@@ -122,70 +140,58 @@ jQuery(document).ready(function(t) {
                                 o += '<td style="border-top:none"></td>';
                                 o += "<td>(" + sub_affiliate[0] + ") " + sub_affiliate[1] + "</td>";
                                 o += '<td style="border-left: 1px solid #dadada">' + sub_affiliate[2] + "</td>";
-                                o += "<td>" + sub_affiliate[3] + "%</td>";
-                                color = sub_affiliate[4] < 65.0 ? 'red': sub_affiliate[4] < 80.0 ? 'yellow': 'green';
+                                o += "<td>" + sub_affiliate[3] + "</td>";
+                                color = sub_affiliate[4] < 60.0 ? 'yellow': 'green';
                                 o += '<td style="background-color: ' + color + '">' + sub_affiliate[4] + '%</td>';
                                 o += "</tr>";
                                 result_html += o;
                             }
                         }
                     }
-                    t(".table_rebill_body").html(result_html);
+                    t(".table_retention_body").html(result_html);
                 },
                 failure: function() {
-                    show_alert("Cannot load rebill information.");
+                    show_waiting("list", !1);
+                    show_alert("Cannot load initial information.");
                 }
             })
         }
     }
+
+    let loading_gif = '<img src="/static/images/loading.gif" style="width: 22px; height: 22px;">';
+    let minus_sign = '<span class="glyphicon glyphicon-minus-sign" aria-hidden="true" style="color: #ffa5a5"></span>';
+    let triangle_sign = '<span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true" style="color: #ffa5a5"></span>';
+    let crm_id = -1;
+    let crm_name = "";
+    let date_type = "date_thisweek";
+    let from_date = "";
+    let to_date = "";
+
+    get_selected_crm();
+    set_dates();
+    get_initial_report();
+
     t(".crm_dropdown_menu li").on("click", function(e) {
         crm_name = t(this).text();
         crm_id = t(this).find("a").attr("id");
         t(".crm_toggle_button").html(crm_name + ' <span class="caret"></span>');
     });
-    t("#from_date").datepicker({});
-    t("#to_date").datepicker({});
-    t("#rebill_date").datepicker({});
-    t("#rebill_date").change(function () {
-        let cur_date = new Date($(this).val());
-        let r = cur_date.getDate() - 21;
-        0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
-        cur_date.setDate(r);
-        from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
-        r = cur_date.getDate() + 6;
-        cur_date.setDate(r);
-        to_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
-        t("#from_date").val(from_date);
-        t("#to_date").val(to_date);
-    });
+    t(".input-daterange").datepicker({});
     t(".date_dropdown_menu li").on("click", function(e) {
         let r = t(this).text();
         date_type = t(this).find("a").attr("id");
         t(".date_toggle_button").html(r + ' <span class="caret"></span>');
         set_dates();
     });
-    t(".rebill_search_button").click(function() {
-        get_rebill("1");
-    });
     t(".btn_export_quick").click(function() {
-        let e = "./export_quick_rebill.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val() + "&crm_id=" + crm_id + "&crm_name=" + crm_name;
+        let e = "./export_quick_initial.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val() + "&crm_id=" + crm_id + "&crm_name=" + crm_name;
         window.location.href = e
     });
     t(".btn_export_full").click(function() {
-        let e = "./export_full_rebill.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
+        let e = "./export_full_initial.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
         window.location.href = e
     });
-
-    let loading_gif = '<img src="/static/images/loading.gif" style="width: 22px; height: 22px;">';
-    let minus_sign = '<span class="glyphicon glyphicon-minus-sign" aria-hidden="true" style="color: #ffa5a5"></span>';
-    let triangle_sign = '<span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true" style="color: #ffa5a5"></span>';
-    let date_type = "date_thisweek";
-    let from_date = "";
-    let to_date = "";
-    let crm_id = -1;
-    let crm_name = "";
-
-    get_selected_crm();
-    set_dates();
-    get_rebill();
+    t(".retention_search_button").click(function() {
+        get_initial_report();
+    });
 });

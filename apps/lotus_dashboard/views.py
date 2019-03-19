@@ -1,15 +1,13 @@
-import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-
+from django.utils import timezone
 from lotus_dashboard.models import *
-from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns
+from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns, task_get_initial_reports, \
+    task_get_rebill_reports
 
 from apilotus import settings
-from utils.llcrmhook import LLCRMHook
 
 
 @login_required
@@ -23,6 +21,30 @@ def dashboard(request):
         'alert_count': 7,   # $alert_count = $dbApi->getRecentAlertCount($userId);
     }
     return render(request, 'dashboard/dashboard.html', context=context)
+
+
+@login_required
+def view_initial_report(request):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+
+    context = {
+        'tab_name': 'Initial',
+        'crm_list': crm_list,
+    }
+    return render(request, 'reports/initial_report.html', context=context)
+
+
+@login_required
+def view_rebill_report(request):
+    rebill_list = [a.crm.id for a in Rebill.objects.all()]
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    crm_list = [a for a in crm_list if a.id in rebill_list]
+
+    context = {
+        'tab_name': 'Rebill',
+        'crm_list': crm_list,
+    }
+    return render(request, 'reports/rebill_report.html', context=context)
 
 
 # ajax functions
@@ -140,10 +162,10 @@ def ajax_crm_position_set(request):
 
 def ajax_dashboard_sales_all(request):
     user = request.user
-    # from_date = datetime.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
-    # to_date = datetime.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
-    from_date = datetime.datetime.strptime('02/11/2019', "%m/%d/%Y").date()
-    to_date = datetime.datetime.strptime('02/15/2019', "%m/%d/%Y").date()
+    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
+    from_date = timezone.datetime.strptime('02/11/2019', "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime('02/15/2019', "%m/%d/%Y").date()
     if user.is_staff:
         crm_list = CrmAccount.objects.active_crm_accounts()
     else:
@@ -158,13 +180,56 @@ def ajax_dashboard_sales_all(request):
     return JsonResponse(crm_results, safe=False)
 
 
+def ajax_initial_list(request):
+    crm_id = int(request.GET['crm_id'])
+    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
+    from_date = timezone.datetime.strptime('03/04/2019', "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime('03/09/2019', "%m/%d/%Y").date()
+    cycle = 1
+
+    try:
+        initial_result = InitialResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id)
+        return JsonResponse(initial_result.result, safe=False)
+    except InitialResult.DoesNotExist:
+        return JsonResponse('[]', safe=False)
+
+
+def ajax_rebill_list(request):
+    crm_id = int(request.GET['crm_id'])
+    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
+    from_date = timezone.datetime.strptime('03/04/2019', "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime('03/09/2019', "%m/%d/%Y").date()
+    cycle = 1
+
+    try:
+        rebill_result = RebillResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id)
+        return JsonResponse(rebill_result.result, safe=False)
+    except RebillResult.DoesNotExist:
+        return JsonResponse('[]', safe=False)
+
+
 def view_get_dashboard_sales(request):
     task_get_dashboard_sales('03/04/2019', '03/09/2019')
-
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
 def view_update_campaigns(request):
     task_update_campaigns()
+    return redirect('/' + settings.LOTUS_ADMIN_URL)
 
+
+def view_get_initial_reports(request):
+    task_get_initial_reports('03/04/2019', '03/09/2019')
+    return redirect('/' + settings.LOTUS_ADMIN_URL)
+
+
+def view_get_rebill_reports(request):
+    cur_date = timezone.datetime.now().date()
+    from_date = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
+    to_date = from_date + timezone.timedelta(days=6)
+
+    # task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
+    task_get_rebill_reports('02/17/2019', '02/23/2019')
     return redirect('/' + settings.LOTUS_ADMIN_URL)

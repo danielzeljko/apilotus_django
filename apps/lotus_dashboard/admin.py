@@ -34,6 +34,21 @@ class LabelCampaignAdmin(admin.ModelAdmin):
     readonly_fields = ['crm', 'campaign_id', 'campaign_name']
 
 
+class OfferAdmin(admin.ModelAdmin):
+    list_display = ['crm', 'name', 'label', 'type', 's1_payout', 's2_payout']
+    list_filter = ['crm', 'label']
+    filter_horizontal = ['step1', 'step2', 'step1_prepaids', 'step2_prepaids', 'step1_tablet', 'step2_tablet']
+
+
+class AffiliateAdmin(admin.ModelAdmin):
+    list_display = ['name', 'afid', 'code', 'bot']
+
+
+class AffiliateOfferAdmin(admin.ModelAdmin):
+    list_display = ['affiliate', 'offer', 'goal', 's1_payout', 's2_payout']
+    list_filter = ['affiliate', 'offer']
+
+
 admin.site.register(DashboardColumn, DashboardColumnAdmin)
 admin.site.register(BlockedIP, BlockedIPAdmin)
 admin.site.register(CrmAccount, CrmAccountAdmin)
@@ -42,3 +57,11 @@ admin.site.register(CrmResult)
 admin.site.register(Label, LabelAdmin)
 admin.site.register(LabelGoal, LabelGoalAdmin)
 admin.site.register(LabelCampaign, LabelCampaignAdmin)
+
+admin.site.register(OfferLabel)
+admin.site.register(Offer, OfferAdmin)
+admin.site.register(Affiliate, AffiliateAdmin)
+admin.site.register(AffiliateOffer, AffiliateOfferAdmin)
+
+admin.site.register(InitialResult)
+admin.site.register(Rebill)
