@@ -97,14 +97,6 @@ jQuery(document).ready(function(t) {
             data: {},
             success: function(response) {
                 show_waiting("sales", "", false);
-                if ("error" === response) {
-                    show_alert("sales", "Cannot load CRM site information.");
-                    return;
-                }
-                else if ("no_cookie" === response) {
-                    window.location.href = "/accounts/login";
-                    return;
-                }
                 crm_list = response;
                 crm_table.clear().draw();
                 t.ajax({
@@ -119,11 +111,10 @@ jQuery(document).ready(function(t) {
 
                         let position_ids = crm_positions.split(",");
                         for (let r = 0; r < position_ids.length; r++) {
-                            let s = position_ids[r].substring(0, 2);
-                            let crm_id = parseInt(position_ids[r].substring(2));
+                            let crm_id = parseInt(position_ids[r]);
                             let crm_name = crm_list.filter(item => item['id'] === crm_id)[0]['crm_name'];
                             let sales = results.filter(item => item['crm_id'] === crm_id);
-                            if ("ll" === s && sales.length > 0) {
+                            if (sales.length > 0) {
                                 for (let i = 0; i < sales.length; i++) {
                                     let label_type = sales[i]['label_id'] == null ? 0 : sales[i]['label_id'];
                                     let label_name = sales[i]['label_name'];

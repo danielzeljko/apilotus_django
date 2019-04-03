@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from lotus_dashboard.models import *
 from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns, task_get_initial_reports, \
-    task_get_rebill_reports
+    task_get_rebill_reports, task_get_sales_report
 
 from apilotus import settings
 
@@ -45,6 +45,19 @@ def view_rebill_report(request):
         'crm_list': crm_list,
     }
     return render(request, 'reports/rebill_report.html', context=context)
+
+
+@login_required
+def view_cap_update(request):
+    rebill_list = [a.crm.id for a in Rebill.objects.all()]
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    crm_list = [a for a in crm_list if a.id in rebill_list]
+
+    context = {
+        'tab_name': 'CAP Update',
+        'crm_list': crm_list,
+    }
+    return render(request, 'cap/cap_update.html', context=context)
 
 
 # ajax functions
@@ -232,4 +245,13 @@ def view_get_rebill_reports(request):
 
     # task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
     task_get_rebill_reports('02/17/2019', '02/23/2019')
+    return redirect('/' + settings.LOTUS_ADMIN_URL)
+
+
+def view_get_cap_update_result(request):
+    today = timezone.datetime.now().date()
+    yesterday = today + timezone.timedelta(-1)
+    week_start = today + timezone.timedelta(-today.weekday())
+
+    task_get_sales_report(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
     return redirect('/' + settings.LOTUS_ADMIN_URL)

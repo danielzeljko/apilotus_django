@@ -16,6 +16,8 @@ from sys import path
 from datetime import date
 from collections import OrderedDict
 
+from decouple import config, Csv
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,17 +27,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # name in our dotted import paths:
 path.append(BASE_DIR)
 path.append(os.path.join(BASE_DIR, 'apps'))
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'k(9t4(4b6fa)6*8vvsn+!m$+roxd$drz8+m3t4vj&1g2cp0uuk'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 
 INTERNAL_IPS = ['*']
 
@@ -66,6 +57,7 @@ LOCAL_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    'rest_framework',
     'ckeditor',
     'rosetta',
     'constance',
@@ -114,13 +106,31 @@ WSGI_APPLICATION = 'apilotus.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+production = False
+if production:
+    DEBUG = False
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
+    SECRET_KEY = config('SECRET_KEY')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': config('DB_NAME'),
+            'USER': config('DB_USER'),
+            'PASSWORD': config('DB_PASSWORD'),
+            'HOST': config('DB_HOST'),
+            'PORT': '',
+        }
     }
-}
+else:
+    DEBUG = True
+    ALLOWED_HOSTS = ['127.0.0.1']
+    SECRET_KEY = 'dummykey'
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
+    }
 
 
 # Password validation
@@ -223,11 +233,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    # ('node_modules', os.path.join(BASE_DIR, 'node_modules')),
-]
+# STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'public/static')]
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
@@ -284,3 +291,11 @@ LOTUS_ADMIN_URL = os.environ.get('LOTUS_ADMIN_URL', 'apilotus-admin/')
 # Password reset should be expired after 24 hours
 PASSWORD_RESET_TIMEOUT_DAYS = 1
 ########## END AUTH CONFIGURATION
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}

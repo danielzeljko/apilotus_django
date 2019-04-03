@@ -267,7 +267,7 @@ class AffiliateOffer(models.Model):
         return self.affiliate.name + ' - ' + self.offer.name
 
 
-class InitialResult(models.Model):
+class ResultBase(models.Model):
     from_date = models.DateField()
     to_date = models.DateField()
     crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
@@ -276,12 +276,17 @@ class InitialResult(models.Model):
     updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
 
     class Meta:
-        verbose_name = _('Initial Result')
-        verbose_name_plural = _('Initial Results')
         ordering = ['pk']
+        abstract = True
 
     def __str__(self):
         return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name
+
+
+class InitialResult(ResultBase):
+    class Meta:
+        verbose_name = _('Initial Result')
+        verbose_name_plural = _('Initial Results')
 
 
 class Rebill(models.Model):
@@ -297,18 +302,13 @@ class Rebill(models.Model):
         return str(self.crm.crm_name)
 
 
-class RebillResult(models.Model):
-    from_date = models.DateField()
-    to_date = models.DateField()
-    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
-    result = models.TextField()
-
-    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
-
+class RebillResult(ResultBase):
     class Meta:
         verbose_name = _('Rebill Result')
         verbose_name_plural = _('Rebill Results')
-        ordering = ['pk']
 
-    def __str__(self):
-        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.crm.crm_name
+
+class CapUpdateResult(ResultBase):
+    class Meta:
+        verbose_name = _('Cap Update Result')
+        verbose_name_plural = _('Cap Update Results')

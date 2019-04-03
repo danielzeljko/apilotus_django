@@ -15,3 +15,5 @@ geopy==1.11.0
 django-widget-tweaks==1.4.2
 requests
 lxml
+djangorestframework
+python-decouple==3.1

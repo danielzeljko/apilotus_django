@@ -37,9 +37,9 @@ jQuery(document).ready(function(t) {
     function set_dates() {
         t("#from_date").prop("disabled", true);
         t("#to_date").prop("disabled", true);
-        var date = new Date;
-        var cur_date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        var formatted_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
+        let date = new Date;
+        let cur_date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+        let formatted_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
         if ("date_today" == date_type) {
             from_date = formatted_date;
             to_date = formatted_date;
@@ -50,7 +50,7 @@ jQuery(document).ready(function(t) {
             to_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
         }
         else if ("date_thisweek" == date_type) {
-            var r = cur_date.getDate() + 1;
+            let r = cur_date.getDate() + 1;
             0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
             cur_date.setDate(r);
             from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
@@ -65,7 +65,7 @@ jQuery(document).ready(function(t) {
             to_date = formatted_date;
         }
         else if ("date_lastweek" == date_type) {
-            r = cur_date.getDate() + 1 - 7;
+            let r = cur_date.getDate() + 1 - 7;
             0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
             cur_date.setDate(r);
             from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
@@ -87,82 +87,69 @@ jQuery(document).ready(function(t) {
         show_waiting(true);
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/crm_list.php",
+            url: "/admin/ajax_crm_list",
             data: {},
-            success: function(e) {
+            success: function(response) {
                 show_waiting(false);
-                if ("error" == e) {
-                    show_alert("Cannot load CRM site information.");
+                let crm_list = response;
+                if ("" == t("#from_date").val()) {
+                    show_alert("Please select FROM DATE.")
                 }
-                else if ("no_cookie" == e) {
-                    window.location.href = "../../admin/login.php";
+                else if ("" == t("#to_date").val()) {
+                    show_alert("Please select TO DATE.")
                 }
                 else {
-                    var crm_list = jQuery.parseJSON(e);
+                    show_waiting(true);
+                    t.ajax({
+                        type: "GET",
+                        url: "/admin/ajax_cap_update_list/",
+                        data: {},
+                        success: function(response) {
+                            show_waiting(false);
+                            cap_update_list = response;
 
-                    if ("" == t("#from_date").val()) {
-                        show_alert("Please select FROM DATE.")
-                    }
-                    else if ("" == t("#to_date").val()) {
-                        show_alert("Please select TO DATE.")
-                    }
-                    else {
-                        show_waiting(true);
-                        t.ajax({
-                            type: "GET",
-                            url: "../daemon/ajax_admin/cap_update_list.php",
-                            data: {},
-                            success: function(e) {
-                                show_waiting(false);
-                                if ("no_cookie" === e)
-                                    return void (window.location.href = "../../admin/login.php");
+                            let html = "";
 
-                                cap_update_list = jQuery.parseJSON(e);
+                            let affiliate_goal_id = -1;
+                            for (let i = 0; i < cap_update_list.length; i++) {
+                                let affiliate_goal = cap_update_list[i];
+                                // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
+                                if (affiliate_goal_id !== affiliate_goal['affiliate_id']) {
+                                    if (-1 !== affiliate_goal_id)
+                                        html += '</div></div></div>';
+                                    affiliate_goal_id = affiliate_goal['affiliate_id'];
 
-                                var html = "";
+                                    html += '<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 c_item"><div>';
+                                    html += '<button type="button" class="btn btn-link btn-sm btn_affiliation_edit payment_badge_blue" id="aedit_' + affiliate_goal['affiliate_id'] + '" data-toggle="modal" data-target="#affiliation_edit_modal" style="font-size: 18px; font-weight: bold; padding-left: 0;">' + affiliate_goal['affiliate_name'] + '</button>';
+                                    if (null == affiliate_goal['afid'])
+                                        html += '<p>AFIDS:</p>';
+                                    else
+                                        html += '<p>AFIDS: ' + affiliate_goal['afid'] + '</p>';
 
-                                var affiliate_goal_id = -1;
-                                for (var i = 0; i < cap_update_list.length; i++) {
-                                    var affiliate_goal = cap_update_list[i];
-                                    // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
-                                    if (affiliate_goal_id != affiliate_goal[1]) {
-                                        if (-1 !== affiliate_goal_id)
-                                            html += '</div></div></div>';
-                                        affiliate_goal_id = affiliate_goal[1];
-
-                                        html += '<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 c_item"><div>';
-                                        html += '<button type="button" class="btn btn-link btn-sm btn_affiliation_edit payment_badge_blue" id="aedit_' + affiliate_goal[1] + '" data-toggle="modal" data-target="#affiliation_edit_modal" style="font-size: 18px; font-weight: bold; padding-left: 0;">' + affiliate_goal[4] + '</button>';
-                                        if (null == affiliate_goal[5])
-                                            html += '<p>AFIDS:</p>';
-                                        else
-                                            html += '<p>AFIDS: ' + affiliate_goal[5] + '</p>';
-
-                                        html += '<h4 style="color: #6772e5">Sales Progress</h4>';
-                                        html += '<div class="row c_cnt_header">';
-                                        html += '<div style="color: #6772e5" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">OFFER</div>';
-                                        html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">PROGRESS</div>';
-                                        html += '<div style="color: #6772e5" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">LAST UPDATED</div>';
-                                        html += '</div>';
-                                        html += '<div class="c_cnt_list">';
-                                    }
-                                    html += '<div class="row">';
-                                    html += '<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + affiliate_goal[6] + '</div>';
-                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="capgoal_' + affiliate_goal[1] + '_' + affiliate_goal[2] + '">[0/' + affiliate_goal[3] + ']</div>';
-                                    html += '<div class="col-lg-5 col-md-5 col-sm-5 col-xs-5" id="updated_' + affiliate_goal[1] + '_' + affiliate_goal[2] + '"></div>';
+                                    html += '<h4 style="color: #6772e5">Sales Progress</h4>';
+                                    html += '<div class="row c_cnt_header">';
+                                    html += '<div style="color: #6772e5" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">OFFER</div>';
+                                    html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">PROGRESS</div>';
+                                    html += '<div style="color: #6772e5" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">LAST UPDATED</div>';
                                     html += '</div>';
+                                    html += '<div class="c_cnt_list">';
                                 }
-                                t(".div_cap_update_body").html(html);
-
-                                for (i = 0; i < crm_list.length; i++) {
-                                    get_cap_update_goal_list(crm_list[i][0]);
-                                }
-                            },
-                            failure: function(t) {
-                                show_waiting(false);
-                                show_alert("Cannot load Affiliate Sales Goal information.")
+                                html += '<div class="row">';
+                                html += '<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + affiliate_goal['offer_name'] + '</div>';
+                                html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="capgoal_' + affiliate_goal['affiliate_id'] + '_' + affiliate_goal['offer_id'] + '">[0/' + affiliate_goal['goal'] + ']</div>';
+                                html += '<div class="col-lg-5 col-md-5 col-sm-5 col-xs-5" id="updated_' + affiliate_goal['affiliate_id'] + '_' + affiliate_goal['offer_id'] + '"></div>';
+                                html += '</div>';
                             }
-                        });
-                    }
+                            t(".div_cap_update_body").html(html);
+
+                            for (let j = 0; j < crm_list.length; j++)
+                                get_cap_update_goal_list(crm_list[j]['id']);
+                        },
+                        failure: function(t) {
+                            show_waiting(false);
+                            show_alert("Cannot load Affiliate Sales Goal information.")
+                        }
+                    });
                 }
             },
             failure: function() {
@@ -175,59 +162,51 @@ jQuery(document).ready(function(t) {
     function get_cap_update_goal_list(crm_id) {
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/cap_update_goal_list.php",
+            url: "/admin/api/cap_update_result",
             data: {
                 crm_id: crm_id,
                 from_date: t("#from_date").val(),
                 to_date: t("#to_date").val()
             },
-            success: function(e) {
-                var goal = jQuery.parseJSON(e);
+            success: function(response) {
+                let goal = response;
 
-                if (goal[0] == 'error')
-                {
-                    show_alert('Cannot load sales information of ' + goal[1]);
-                }
-                else if (goal[0] == 'no_cookie')
-                {
-                    window.location.href = '../../admin/login.php';
-                }
-                else {
-                    goals.push(goal);
-                    for (var i = 0; i < cap_update_list.length; i++) {
-                        var affiliate_goal = cap_update_list[i];
-                        if (goal[1] == affiliate_goal[7]) {
-                            var count = 0;
-                            var afids = affiliate_goal[5].split(',');
-                            var campaign_ids = affiliate_goal[10].split(',');
-                            for (var k = 0; k < goal[2].length; k++) {
-                                var campaign_prospects = goal[2][k];
-                                for (var l = 0; l < campaign_ids.length; l++) {
-                                    if ("step1" === campaign_ids[l].split('_')[0]) {
-                                        var campaign_id = campaign_ids[l].split('_')[1];
-                                        if (campaign_id == campaign_prospects[0]) {
-                                            for (var m = 0; m < campaign_prospects[1].length; m++) {
-                                                for (var n = 0; n < afids.length; n++) {
-                                                    if (campaign_prospects[1][m][0] == afids[n].split('(')[0]) {
-                                                        count += campaign_prospects[1][m][2];
-                                                    }
-                                                }
+                if (goal.length === 0)
+                    return;
+
+                goal = goal[0]
+                goals.push(goal);
+                for (let i = 0; i < cap_update_list.length; i++) {
+                    let affiliate_goal = cap_update_list[i];
+                    if (goal['crm'] === affiliate_goal['crm_id']) {
+                        let count = 0;
+                        let afids = affiliate_goal['afid'].split(',');
+                        let campaign_ids = affiliate_goal['step1'];
+                        let goal_data = jQuery.parseJSON(goal['result'].replace(new RegExp("'", 'g'), '"'));
+                        for (let k = 0; k < goal_data.length; k++) {
+                            let campaign_prospects = goal_data[k];
+                            for (let l = 0; l < campaign_ids.length; l++) {
+                                if (campaign_ids[l] === campaign_prospects[0]) {
+                                    for (let m = 0; m < campaign_prospects[1].length; m++) {
+                                        for (let n = 0; n < afids.length; n++) {
+                                            if (campaign_prospects[1][m]['id'] === afids[n].split('(')[0]) {
+                                                count += campaign_prospects[1][m]['initial_customers'];
                                             }
                                         }
                                     }
                                 }
                             }
-                            $("#capgoal_" + affiliate_goal[1] + '_' + affiliate_goal[2]).html(
-                                '[' + count.toString() + '/' + affiliate_goal[3] + ']'
-                            );
-
-                            var est = new Date(goal[3].replace(' ', 'T'));
-                            est.setHours(est.getHours() - 4);
-                            $("#updated_" + affiliate_goal[1] + '_' + affiliate_goal[2]).html(
-                                format_date(est.getFullYear(), est.getMonth() + 1, est.getDate()) + ' ' +
-                                format_time(est.getHours(), est.getMinutes(), est.getSeconds())
-                            );
                         }
+                        $("#capgoal_" + affiliate_goal['affiliate_id'] + '_' + affiliate_goal['offer_id']).html(
+                            '[' + count.toString() + '/' + affiliate_goal['goal'] + ']'
+                        );
+
+                        let est = new Date(goal['updated_at'].slice(0, 19).replace('T', ' '));
+                        est.setHours(est.getHours() - 4);
+                        $("#updated_" + affiliate_goal['affiliate_id'] + '_' + affiliate_goal['offer_id']).html(
+                            format_date(est.getFullYear(), est.getMonth() + 1, est.getDate()) + ' ' +
+                            format_time(est.getHours(), est.getMinutes(), est.getSeconds())
+                        );
                     }
                 }
             },
@@ -239,30 +218,30 @@ jQuery(document).ready(function(t) {
     }
 
     function get_export_result() {
-        var affiliate_goal_id = -1;
-        var text_result = '';
-        for (var i = 0; i < cap_update_list.length; i++) {
-            var affiliate_goal = cap_update_list[i];
+        let affiliate_goal_id = -1;
+        let text_result = '';
+        for (let i = 0; i < cap_update_list.length; i++) {
+            let affiliate_goal = cap_update_list[i];
             if (affiliate_goal_id != affiliate_goal[1]) {
                 affiliate_goal_id = affiliate_goal[1];
                 if (i != 0) text_result += '\n\n';
                 text_result += "To " + affiliate_goal[4] + '\n\n';
                 text_result += "Here are remaining caps for the week\n\n";
             }
-            for (var j = 0; j < goals.length; j++) {
-                var goal = goals[j];
+            for (let j = 0; j < goals.length; j++) {
+                let goal = goals[j];
                 if (goal[1] == affiliate_goal[7]) {
-                    var count = 0;
-                    var afids = affiliate_goal[5].split(',');
-                    var campaign_ids = affiliate_goal[10].split(',');
-                    for (var k = 0; k < goal[2].length; k++) {
-                        var campaign_prospects = goal[2][k];
-                        for (var l = 0; l < campaign_ids.length; l++) {
+                    let count = 0;
+                    let afids = affiliate_goal[5].split(',');
+                    let campaign_ids = affiliate_goal[10].split(',');
+                    for (let k = 0; k < goal[2].length; k++) {
+                        let campaign_prospects = goal[2][k];
+                        for (let l = 0; l < campaign_ids.length; l++) {
                             if ("step1" === campaign_ids[l].split('_')[0]) {
-                                var campaign_id = campaign_ids[l].split('_')[1];
+                                let campaign_id = campaign_ids[l].split('_')[1];
                                 if (campaign_id == campaign_prospects[0]) {
-                                    for (var m = 0; m < campaign_prospects[1].length; m++) {
-                                        for (var n = 0; n < afids.length; n++) {
+                                    for (let m = 0; m < campaign_prospects[1].length; m++) {
+                                        for (let n = 0; n < afids.length; n++) {
                                             if (campaign_prospects[1][m][0] == afids[n]) {
                                                 count += campaign_prospects[1][m][2];
                                             }
@@ -278,9 +257,9 @@ jQuery(document).ready(function(t) {
                 }
             }
         }
-        var data = new Blob([text_result], {type: 'text/plain'});
-        var textFile = window.URL.createObjectURL(data);
-        var link = document.getElementById('downloadlink');
+        let data = new Blob([text_result], {type: 'text/plain'});
+        let textFile = window.URL.createObjectURL(data);
+        let link = document.getElementById('downloadlink');
         link.setAttribute('download', 'cap_result_' +
             t("#from_date").val().replace(new RegExp('/', 'g'), '-') + '_' +
             t("#to_date").val().replace(new RegExp('/', 'g'), '-') + '.txt');
@@ -289,7 +268,7 @@ jQuery(document).ready(function(t) {
 
     t(".input-daterange").datepicker({});
     t(".date_dropdown_menu li").on("click", function(e) {
-        var r = t(this).text();
+        let r = t(this).text();
         date_type = t(this).find("a").attr("id");
         t(".date_toggle_button").html(r + ' <span class="caret"></span>');
         set_dates();
@@ -302,7 +281,7 @@ jQuery(document).ready(function(t) {
     });
 
 
-    let loading_gif = '<img src="../images/loading.gif" style="width:22px;height:22px;">';
+    let loading_gif = '<img src="/static/images/loading.gif" style="width: 22px; height: 22px;">';
     let from_date = "";
     let to_date = "";
     let cap_update_list = null;
@@ -311,7 +290,6 @@ jQuery(document).ready(function(t) {
 
     set_dates();
     get_cap_update_list();
-
 
     let offers = null;
     let affiliations = null;
@@ -322,18 +300,11 @@ jQuery(document).ready(function(t) {
         show_waiting(true);
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/offer_list.php",
+            url: "/admin/api/offer",
             data: {},
-            success: function (e) {
+            success: function (response) {
                 show_waiting(false);
-                if ("no_cookie" === e)
-                    window.location.href = "../../admin/login.php";
-                else if ("error" === e) {
-                    show_alert("Offers cannot be loaded.");
-                }
-                else {
-                    offers = jQuery.parseJSON(e);
-                }
+                offers = response;
             },
             failure: function () {
                 show_waiting(false);
@@ -346,14 +317,11 @@ jQuery(document).ready(function(t) {
         $(".table_affiliation_body").html("");
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/setting_affiliation_list.php",
+            url: "/admin/ajax_affiliation_list",
             data: {},
-            success: function (e) {
+            success: function (response) {
                 show_waiting(false);
-                if ("no_cookie" === e)
-                    return void (window.location.href = "../../admin/login.php");
-
-                affiliations = jQuery.parseJSON(e);
+                affiliations = response;
             },
             failure: function () {
                 show_waiting(false);

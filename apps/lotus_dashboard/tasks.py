@@ -147,3 +147,29 @@ def task_get_rebill_reports(from_date, to_date, cycle=2):
             rebill_result.crm = crm
         rebill_result.result = str(results)
         rebill_result.save()
+
+
+def task_get_sales_report(from_date, to_date, campaign_id='', aff='', f='', sf=''):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+
+    for crm in crm_list:
+        if crm.id != 2:
+            continue
+        results = []
+        llcrm_hook = LLCRMHook(crm.id)
+        campaign_results = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '', '', '')
+        for campaign_result in campaign_results[:-1]:
+            sub_result = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '1', campaign_result['id'], '0')
+            results.append([int(campaign_result['id']), sub_result[:-1]])
+
+        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+        try:
+            cap_update_result = CapUpdateResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+        except CapUpdateResult.DoesNotExist:
+            cap_update_result = CapUpdateResult()
+            cap_update_result.from_date = from_date
+            cap_update_result.to_date = to_date
+            cap_update_result.crm = crm
+        cap_update_result.result = str(results)
+        cap_update_result.save()

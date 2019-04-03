@@ -158,7 +158,9 @@ class LLCRMHook(object):
         return results
 
     def get_prospect_report(self, from_date, to_date):
-        headers = {'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token}
+        headers = {
+            'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
+        }
         response = requests.get(self.prospect_url(from_date, to_date), headers=headers)
         data = fromstring(response.text)
         prospects = data.xpath('//table[@class="list "]/tr')[1:-1]
@@ -293,6 +295,71 @@ class LLCRMHook(object):
                 'approval_rate': float(self.parse_value(retention.xpath('.//td[12]/text()')[0])),
                 'net_revenue': float(self.parse_value(retention.xpath('.//td[13]/text()')[0])),
             })
+        return results
+
+    def get_sales_report_for_cap_update(self, from_date, to_date, campaign_id, aff, f, sf):
+        headers = {
+            'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
+        }
+
+        url = self.prospect_url(from_date, to_date)
+        if aff:
+            if campaign_id:
+                url += '&affiliate_id=' + campaign_id
+            url += '&aff=' + aff
+            if f:
+                url += '&f=' + f
+            if sf:
+                url += '&sf=' + sf
+        else:
+            if campaign_id:
+                url += '&campaign_id=' + campaign_id
+
+        response = requests.get(url, headers=headers)
+        data = fromstring(response.text)
+
+        prospects = data.xpath('//table[@class="list "]/tr')
+
+        page_type = prospects[0].xpath('.//td[1]/span/text()')[0]
+
+        results = []
+        for prospect in prospects[1:]:
+            total = prospect.xpath('.//td[1]/b/text()')
+            if total:
+                id = 'Total'
+            else:
+                if page_type == 'Campaign Name':
+                    id = self.parse_value(prospect.xpath('.//td[1]/text()')[0].split(')')[0][1:])
+                    if not id:
+                        id = self.parse_value(prospect.xpath('.//td[1]/@title')[0].split(')')[0][1:])
+                else:
+                    id = prospect.xpath('.//td[1]/text()')[0]
+            data = {
+                'id': id,
+                'prospects': int(self.parse_value(prospect.xpath('.//td[2]/text()')[0])),
+                'initial_customers': int(self.parse_value(prospect.xpath('.//td[3]/text()')[0])),
+                'conversion_rate': float(self.parse_value(prospect.xpath('.//td[4]/text()')[0])),
+                'gross_revenue': float(self.parse_value(prospect.xpath('.//td[5]/text()')[0])),
+                'average_revenue': float(self.parse_value(prospect.xpath('.//td[6]/text()')[0])),
+            }
+            if total:
+                affiliate_breakdown = prospect.xpath('.//td[7]/a/@onclick')
+            else:
+                affiliate_breakdown = prospect.xpath('.//td[7]/div/div/a/@onclick')
+            if affiliate_breakdown:
+                data['search_affiliate'] = affiliate_breakdown[0].split(',')[1].replace("'", '')
+                data['has_affid'] = affiliate_breakdown[0].split(',')[2].replace("'", '').replace(')', '')
+                if page_type == 'Campaign Name':
+                    data['sub_affid'] = 'Affiliate'
+                else:
+                    data['sub_affid'] = 'Sub-Affiliate'
+            else:
+                data['search_affiliate'] = ''
+                data['has_affid'] = ''
+                data['sub_affid'] = ''
+
+            results.append(data)
+
         return results
 
     def parse_value(self, value):
