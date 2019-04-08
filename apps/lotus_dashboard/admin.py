@@ -29,7 +29,7 @@ class LabelGoalAdmin(admin.ModelAdmin):
 
 class LabelCampaignAdmin(admin.ModelAdmin):
     list_display = ['crm', 'campaign_id', 'campaign_name', 'campaign_label']
-    list_filter = ['crm']
+    list_filter = ['crm', 'campaign_id']
     search_fields = ['campaign_id']
     readonly_fields = ['crm', 'campaign_id', 'campaign_name']
 
@@ -37,7 +37,7 @@ class LabelCampaignAdmin(admin.ModelAdmin):
 class OfferAdmin(admin.ModelAdmin):
     list_display = ['crm', 'name', 'label', 'type', 's1_payout', 's2_payout']
     list_filter = ['crm', 'label']
-    filter_horizontal = ['step1', 'step2', 'step1_prepaids', 'step2_prepaids', 'step1_tablet', 'step2_tablet']
+    raw_id_fields = ['step1', 'step2', 'step1_prepaids', 'step2_prepaids', 'step1_tablet', 'step2_tablet']
 
 
 class AffiliateAdmin(admin.ModelAdmin):
@@ -47,6 +47,11 @@ class AffiliateAdmin(admin.ModelAdmin):
 class AffiliateOfferAdmin(admin.ModelAdmin):
     list_display = ['affiliate', 'offer', 'goal', 's1_payout', 's2_payout']
     list_filter = ['affiliate', 'offer']
+
+
+class RebillAdmin(admin.ModelAdmin):
+    list_display = ['crm']
+    raw_id_fields = ['rebills']
 
 
 admin.site.register(DashboardColumn, DashboardColumnAdmin)
@@ -64,4 +69,4 @@ admin.site.register(Affiliate, AffiliateAdmin)
 admin.site.register(AffiliateOffer, AffiliateOfferAdmin)
 
 admin.site.register(InitialResult)
-admin.site.register(Rebill)
+admin.site.register(Rebill, RebillAdmin)

@@ -175,10 +175,8 @@ def ajax_crm_position_set(request):
 
 def ajax_dashboard_sales_all(request):
     user = request.user
-    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
-    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
-    from_date = timezone.datetime.strptime('02/11/2019', "%m/%d/%Y").date()
-    to_date = timezone.datetime.strptime('02/15/2019', "%m/%d/%Y").date()
+    from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
     if user.is_staff:
         crm_list = CrmAccount.objects.active_crm_accounts()
     else:
@@ -195,11 +193,8 @@ def ajax_dashboard_sales_all(request):
 
 def ajax_initial_list(request):
     crm_id = int(request.GET['crm_id'])
-    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
-    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
-    from_date = timezone.datetime.strptime('03/04/2019', "%m/%d/%Y").date()
-    to_date = timezone.datetime.strptime('03/09/2019', "%m/%d/%Y").date()
-    cycle = 1
+    from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
 
     try:
         initial_result = InitialResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id)
@@ -210,11 +205,8 @@ def ajax_initial_list(request):
 
 def ajax_rebill_list(request):
     crm_id = int(request.GET['crm_id'])
-    # from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
-    # to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
-    from_date = timezone.datetime.strptime('03/04/2019', "%m/%d/%Y").date()
-    to_date = timezone.datetime.strptime('03/09/2019', "%m/%d/%Y").date()
-    cycle = 1
+    from_date = timezone.datetime.strptime(request.GET['from_date'], "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime(request.GET['to_date'], "%m/%d/%Y").date()
 
     try:
         rebill_result = RebillResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id)
@@ -223,18 +215,24 @@ def ajax_rebill_list(request):
         return JsonResponse('[]', safe=False)
 
 
-def view_get_dashboard_sales(request):
-    task_get_dashboard_sales('03/04/2019', '03/09/2019')
-    return redirect('/' + settings.LOTUS_ADMIN_URL)
-
-
 def view_update_campaigns(request):
     task_update_campaigns()
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
+def view_get_dashboard_sales(request):
+    today = timezone.datetime.now().date()
+    week_start = today + timezone.timedelta(-today.weekday())
+
+    task_get_dashboard_sales(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    return redirect('/' + settings.LOTUS_ADMIN_URL)
+
+
 def view_get_initial_reports(request):
-    task_get_initial_reports('03/04/2019', '03/09/2019')
+    today = timezone.datetime.now().date()
+    week_start = today + timezone.timedelta(-today.weekday())
+
+    task_get_initial_reports(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
@@ -243,8 +241,7 @@ def view_get_rebill_reports(request):
     from_date = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
     to_date = from_date + timezone.timedelta(days=6)
 
-    # task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
-    task_get_rebill_reports('02/17/2019', '02/23/2019')
+    task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
@@ -253,5 +250,5 @@ def view_get_cap_update_result(request):
     yesterday = today + timezone.timedelta(-1)
     week_start = today + timezone.timedelta(-today.weekday())
 
-    task_get_sales_report(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    task_get_sales_report(week_start, today)
     return redirect('/' + settings.LOTUS_ADMIN_URL)

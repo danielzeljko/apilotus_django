@@ -316,6 +316,8 @@ class LLCRMHook(object):
                 url += '&campaign_id=' + campaign_id
 
         response = requests.get(url, headers=headers)
+        if response.text.__contains__('No results exist at this time.'):
+            return []
         data = fromstring(response.text)
 
         prospects = data.xpath('//table[@class="list "]/tr')

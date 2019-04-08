@@ -8,7 +8,7 @@ from utils.llcrmhook import LLCRMHook
 
 def task_update_campaigns():
     crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list[3:4]:
+    for crm in crm_list:
         llcrm_api = LLCRMAPI(crm.crm_url, crm.api_username, crm.api_password)
         campaigns = llcrm_api.campaigns()
         if campaigns['response_code'] != "100":
@@ -35,18 +35,20 @@ def task_update_campaigns():
 
 def task_get_dashboard_sales(from_date, to_date):
     crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list[1:2]:
+    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+
+    for crm in crm_list:
+        print(crm)
         llcrm_hook = LLCRMHook(crm.id)
         crm_results = llcrm_hook.get_crm_sales(from_date, to_date)
-        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
         for result in crm_results:
             try:
-                crm_result = CrmResult.objects.get(from_date=from_date, to_date=to_date, crm=crm, label_id=result['label_id'])
+                crm_result = CrmResult.objects.get(from_date=from_date_, to_date=to_date_, crm=crm, label_id=result['label_id'])
             except CrmResult.DoesNotExist:
                 crm_result = CrmResult()
-                crm_result.from_date = from_date
-                crm_result.to_date = to_date
+                crm_result.from_date = from_date_
+                crm_result.to_date = to_date_
                 crm_result.crm = crm
                 crm_result.label_id = result['label_id']
             crm_result.goal = result['label_goal']
@@ -68,8 +70,11 @@ def task_get_dashboard_sales(from_date, to_date):
 
 def task_get_initial_reports(from_date, to_date, cycle=1):
     crm_list = CrmAccount.objects.active_crm_accounts()
+    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
 
-    for crm in crm_list[1:2]:
+    for crm in crm_list:
+        print(crm)
         results = []
         llcrm_hook = LLCRMHook(crm.id)
         retentions = llcrm_hook.get_retention_report(from_date, to_date)
@@ -93,27 +98,28 @@ def task_get_initial_reports(from_date, to_date, cycle=1):
                     retention['campaign_id'], retention['campaign_name'], retention['net_approved'], retention['gross_orders'],
                     '%.2f' % (retention['net_approved'] * 100 / retention['gross_orders'])], aids])
 
-        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
         try:
-            initial_result = InitialResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+            initial_result = InitialResult.objects.get(from_date=from_date_, to_date=to_date_, crm=crm)
         except InitialResult.DoesNotExist:
             initial_result = InitialResult()
-            initial_result.from_date = from_date
-            initial_result.to_date = to_date
+            initial_result.from_date = from_date_
+            initial_result.to_date = to_date_
             initial_result.crm = crm
         initial_result.result = str(results)
         initial_result.save()
 
 
 def task_get_rebill_reports(from_date, to_date, cycle=2):
-    crm_list = Rebill.objects.all()
+    rebill_list = Rebill.objects.filter(crm__paused=False)
+    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
 
-    for crm in crm_list:
+    for rebill in rebill_list:
+        print(rebill.crm)
         results = []
-        llcrm_hook = LLCRMHook(crm.crm_id)
+        llcrm_hook = LLCRMHook(rebill.crm_id)
         retentions = llcrm_hook.get_retention_report(from_date, to_date, cycle)
-        rebills = [a.campaign_id for a in crm.rebills.all()]
+        rebills = [a.campaign_id for a in rebill.rebills.all()]
         for retention in retentions:
             if retention['campaign_id'] in rebills:
                 if retention['gross_orders'] <= 10:
@@ -136,25 +142,24 @@ def task_get_rebill_reports(from_date, to_date, cycle=2):
                     retention['campaign_id'], retention['campaign_name'], retention['net_approved'], retention['gross_orders'],
                     '%.2f' % (retention['net_approved'] * 100 / retention['gross_orders'])], aids])
 
-        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
         try:
-            rebill_result = RebillResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+            rebill_result = RebillResult.objects.get(from_date=from_date_, to_date=to_date_, crm=rebill.crm)
         except RebillResult.DoesNotExist:
             rebill_result = RebillResult()
-            rebill_result.from_date = from_date
-            rebill_result.to_date = to_date
-            rebill_result.crm = crm
+            rebill_result.from_date = from_date_
+            rebill_result.to_date = to_date_
+            rebill_result.crm = rebill.crm
         rebill_result.result = str(results)
         rebill_result.save()
 
 
-def task_get_sales_report(from_date, to_date, campaign_id='', aff='', f='', sf=''):
+def task_get_sales_report(from_date_, to_date_, campaign_id='', aff='', f='', sf=''):
     crm_list = CrmAccount.objects.active_crm_accounts()
+    from_date = from_date_.strftime('%m/%d/%Y')
+    to_date = to_date_.strftime('%m/%d/%Y')
 
     for crm in crm_list:
-        if crm.id != 2:
-            continue
+        print(crm)
         results = []
         llcrm_hook = LLCRMHook(crm.id)
         campaign_results = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '', '', '')
@@ -162,14 +167,12 @@ def task_get_sales_report(from_date, to_date, campaign_id='', aff='', f='', sf='
             sub_result = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '1', campaign_result['id'], '0')
             results.append([int(campaign_result['id']), sub_result[:-1]])
 
-        from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-        to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
         try:
-            cap_update_result = CapUpdateResult.objects.get(from_date=from_date, to_date=to_date, crm=crm)
+            cap_update_result = CapUpdateResult.objects.get(from_date=from_date_, to_date=to_date_, crm=crm)
         except CapUpdateResult.DoesNotExist:
             cap_update_result = CapUpdateResult()
-            cap_update_result.from_date = from_date
-            cap_update_result.to_date = to_date
+            cap_update_result.from_date = from_date_
+            cap_update_result.to_date = to_date_
             cap_update_result.crm = crm
         cap_update_result.result = str(results)
         cap_update_result.save()

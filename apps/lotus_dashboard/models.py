@@ -166,8 +166,8 @@ CAMPAIGN_TYPE = (
 CAMPAIGN_FORMAT = (
     (1, 'Step1'),
     (2, 'Step2'),
-    (5, 'Desktop'),
-    (6, 'Mobile'),
+    (3, 'Desktop'),
+    (4, 'Mobile'),
 )
 
 
