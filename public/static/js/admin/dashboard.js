@@ -112,13 +112,13 @@ jQuery(document).ready(function(t) {
                         let position_ids = crm_positions.split(",");
                         for (let r = 0; r < position_ids.length; r++) {
                             let crm_id = parseInt(position_ids[r]);
-                            let crm_name = crm_list.filter(item => item['id'] === crm_id)[0]['crm_name'];
+                            let crm = crm_list.filter(item => item['id'] === crm_id)[0];
                             let sales = results.filter(item => item['crm_id'] === crm_id);
                             if (sales.length > 0) {
                                 for (let i = 0; i < sales.length; i++) {
                                     let label_type = sales[i]['label_id'] == null ? 0 : sales[i]['label_id'];
                                     let label_name = sales[i]['label_name'];
-                                    let crm_goal = parseFloat(sales[i]['goal']);
+                                    let crm_goal = sales[i]['label_id'] === null ? parseFloat(crm['sales_goal']) : parseFloat(sales[i]['goal']);
 
                                     let step1 = parseFloat(sales[i]['step1']);
                                     let step2 = parseFloat(sales[i]['step2']);
@@ -163,7 +163,7 @@ jQuery(document).ready(function(t) {
                                         no_tag = '<span class="a_dsb_no_spn crm_row" id="row_' + crm_id + '">' + (r + 1) + '</span>';
                                         crm_tag = '<span data-toggle="tooltip" data-placement="bottom" id="ll' + crm_id + '" ' +
                                             'class="payment_badge payment_badge_blue crm_name_row a_sub_spn_vertical"' +
-                                            ' title="' + timestamp + '">' + crm_name + '</span>' +
+                                            ' title="' + timestamp + '">' + crm['crm_name'] + '</span>' +
                                             '<span class="a_less_than_390 a_less_than_390_tb">' + goal_tag + '</span>';
                                         vertical_tag = '<span id="crm0_' + crm_id + '_0">-</span>';
                                         setting_btn = '<button type="button" id="setting_' + crm_id + '" class="btn btn-link btn-sm btn_setting" data-toggle="modal" data-target="#setting_edit_modal"><span class="glyphicon glyphicon-list" aria-hidden="true"></span></button>';

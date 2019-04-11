@@ -1,109 +1,138 @@
 import psycopg2
+import pymysql
 
-conn = psycopg2.connect(
+crm_match = {
+    59: 1,
+    75: 2,
+    83: 3,
+    84: 4,
+    89: 5,
+    93: 6,
+    94: 7,
+    95: 8,
+    98: 9,
+    100: 10,
+    101: 11,
+    102: 12,
+    103: 13,
+    104: 14,
+    105: 15,
+}
+
+dash_conn = pymysql.connect(
+    host="142.93.193.208",
+    database="commercials_apilotus",
+    user="root",
+    password="apilotusdb123456",
+)
+dash_cursor = dash_conn.cursor()
+
+pro_conn = psycopg2.connect(
     host="pro.apilotus.com",
     database="apilotus",
     user="apilotus",
     password="1g2cp0uk",
 )
-cursor = conn.cursor()
+pro_cursor = pro_conn.cursor()
 
-dash_campaigns = '''
-165	,1,5,8,
-166	,1,6,8,
-167	,3,1,8,
-168	,4,1,8,
-169	,2,5,8,
-170	,2,6,8,
-171	,3,2,8,
-172	,4,2,8,
-'''
-dash_campaigns = [a.split('\t') for a in dash_campaigns.split('\n')[1:-1]]
 ok = True
 
-crm_id = 15
-query = "SELECT * FROM lotus_dashboard_labelcampaign WHERE crm_id=" + str(crm_id) + " ORDER BY campaign_id"
-cursor.execute(query)
-pro_campaigns = cursor.fetchall()
+query = "SELECT * FROM primary_crm_account"
+dash_cursor.execute(query)
+dash_crms = dash_cursor.fetchall()
 
-count = 0
-campaign_types = []
-campaign_formats = []
-label_ids = []
+for dash_crm in dash_crms:
+    print(dash_crm)
+    query = "SELECT * FROM primary_label_campaign WHERE crm_id=" + str(dash_crm[0])
+    dash_cursor.execute(query)
+    dash_campaigns = dash_cursor.fetchall()
 
-dash_ids = []
-pro_ids = []
+    crm_id = crm_match[dash_crm[0]]
+    query = "SELECT * FROM lotus_dashboard_labelcampaign WHERE crm_id=" + str(crm_id) + " ORDER BY campaign_id"
+    pro_cursor.execute(query)
+    pro_campaigns = pro_cursor.fetchall()
 
-for campaign in dash_campaigns:
-    dash_ids.append(int(campaign[0]))
+    count = 0
+    campaign_types = []
+    campaign_formats = []
+    label_ids = []
 
-for item in pro_campaigns:
+    dash_ids = []
+    pro_ids = []
+
     for campaign in dash_campaigns:
-        if int(campaign[0]) == item[1]:
-            pro_ids.append(item[1])
-            count += 1
+        dash_ids.append(campaign[2])
 
-            a = campaign[1][1:-1].split(',')
-            if len(a) == 2:
-                campaign_type = int(a[0])
-                label_id = int(a[1])
-                print(campaign[0], campaign_type, label_id)
-                campaign_types.append(campaign_type)
-                label_ids.append(label_id)
+    for item in pro_campaigns:
+        for campaign in dash_campaigns:
+            if campaign[2] == item[1]:
+                pro_ids.append(item[1])
+                count += 1
 
-                if label_id == 7:
-                    label_id = 1
-                elif label_id == 8:
-                    label_id = 2
-                elif label_id == 9:
-                    label_id = 3
-                elif label_id == 12:
-                    label_id = 4
-                elif label_id == 14:
-                    label_id = 5
-                elif label_id == 31:
-                    label_id = 6
+                a = campaign[3][1:-1].split(',')
+                if len(a) == 2:
+                    campaign_type = int(a[0])
+                    label_id = int(a[1])
+                    print(campaign[2], campaign_type, label_id)
+                    campaign_types.append(campaign_type)
+                    label_ids.append(label_id)
 
-                if ok:
-                    query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
-                    cursor.execute(query(campaign_type, label_id, crm_id, item[1]))
-            elif len(a) == 3:
-                campaign_type = int(a[0])
-                campaign_format = int(a[1])
-                label_id = int(a[2])
-                print(campaign[0], campaign_type, campaign_format, label_id)
-                campaign_types.append(campaign_type)
-                campaign_formats.append(campaign_format)
-                label_ids.append(label_id)
+                    if label_id == 7:
+                        label_id = 1
+                    elif label_id == 8:
+                        label_id = 2
+                    elif label_id == 9:
+                        label_id = 3
+                    elif label_id == 12:
+                        label_id = 4
+                    elif label_id == 14:
+                        label_id = 5
+                    elif label_id == 31:
+                        label_id = 6
 
-                if label_id == 7:
-                    label_id = 1
-                elif label_id == 8:
-                    label_id = 2
-                elif label_id == 9:
-                    label_id = 3
-                elif label_id == 12:
-                    label_id = 4
-                elif label_id == 14:
-                    label_id = 5
-                elif label_id == 31:
-                    label_id = 6
+                    if ok:
+                        query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
+                        pro_cursor.execute(query(campaign_type, label_id, crm_id, item[1]))
+                elif len(a) == 3:
+                    campaign_type = int(a[0])
+                    campaign_format = int(a[1])
+                    label_id = int(a[2])
+                    print(campaign[2], campaign_type, campaign_format, label_id)
+                    campaign_types.append(campaign_type)
+                    campaign_formats.append(campaign_format)
+                    label_ids.append(label_id)
 
-                if campaign_format == 5:
-                    campaign_format = 3
-                elif campaign_format == 6:
-                    campaign_format = 4
+                    if label_id == 7:
+                        label_id = 1
+                    elif label_id == 8:
+                        label_id = 2
+                    elif label_id == 9:
+                        label_id = 3
+                    elif label_id == 12:
+                        label_id = 4
+                    elif label_id == 14:
+                        label_id = 5
+                    elif label_id == 31:
+                        label_id = 6
 
-                if ok:
-                    query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, campaign_format = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
-                    cursor.execute(query(campaign_type, campaign_format, label_id, crm_id, item[1]))
-            else:
-                print('-------------')
+                    if campaign_format == 5:
+                        campaign_format = 3
+                    elif campaign_format == 6:
+                        campaign_format = 4
 
-print(set(campaign_types), set(campaign_formats), set(label_ids))
-print(set(dash_ids) - set(pro_ids))
-print(len(dash_ids), count)
+                    if ok:
+                        query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, campaign_format = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
+                        pro_cursor.execute(query(campaign_type, campaign_format, label_id, crm_id, item[1]))
+                else:
+                    print('-------------')
 
-conn.commit()
-cursor.close()
-conn.close()
+    print(set(campaign_types), set(campaign_formats), set(label_ids))
+    print(set(dash_ids) - set(pro_ids))
+    print(len(dash_ids), count)
+
+dash_cursor.close()
+dash_conn.close()
+
+pro_conn.commit()
+pro_cursor.close()
+pro_conn.close()

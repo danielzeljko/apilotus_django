@@ -72,6 +72,7 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
 MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -106,7 +107,7 @@ WSGI_APPLICATION = 'apilotus.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
-production = False
+production = True
 if production:
     DEBUG = False
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
@@ -233,8 +234,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-# STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'public/static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'public/static')]
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 

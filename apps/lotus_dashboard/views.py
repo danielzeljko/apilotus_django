@@ -224,14 +224,15 @@ def view_get_dashboard_sales(request):
     today = timezone.datetime.now().date()
     week_start = today + timezone.timedelta(-today.weekday())
 
-    task_get_dashboard_sales(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-    return redirect('/' + settings.LOTUS_ADMIN_URL)
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    for crm in crm_list:
+        task_get_dashboard_sales(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    return redirect('lotus_dashboard:dashboard')
 
 
 def view_get_initial_reports(request):
     today = timezone.datetime.now().date()
     week_start = today + timezone.timedelta(-today.weekday())
-
     task_get_initial_reports(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
@@ -240,15 +241,15 @@ def view_get_rebill_reports(request):
     cur_date = timezone.datetime.now().date()
     from_date = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
     to_date = from_date + timezone.timedelta(days=6)
-
     task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
 def view_get_cap_update_result(request):
     today = timezone.datetime.now().date()
-    yesterday = today + timezone.timedelta(-1)
     week_start = today + timezone.timedelta(-today.weekday())
 
-    task_get_sales_report(week_start, today)
-    return redirect('/' + settings.LOTUS_ADMIN_URL)
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    for crm in crm_list:
+        task_get_sales_report(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    return redirect('lotus_dashboard:cap_update')

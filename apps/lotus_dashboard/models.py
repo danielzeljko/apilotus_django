@@ -259,9 +259,9 @@ class AffiliateOffer(models.Model):
     s2_payout = models.IntegerField(null=True, blank=True)
 
     class Meta:
-        verbose_name = _('Affiliate Goal')
-        verbose_name_plural = _('Affiliate Goals')
-        ordering = ['pk']
+        verbose_name = _('Affiliate Offer')
+        verbose_name_plural = _('Affiliate Offers')
+        ordering = ['affiliate', 'pk']
 
     def __str__(self):
         return self.affiliate.name + ' - ' + self.offer.name
