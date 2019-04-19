@@ -5,6 +5,9 @@ register = template.Library()
 
 @register.filter
 def check_enable_menu(user, permissions):
+    if not user:
+        return False
+
     if user.user_role == 'admin':
         return True
 

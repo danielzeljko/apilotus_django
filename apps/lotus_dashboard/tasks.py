@@ -10,7 +10,7 @@ from utils.llcrmhook import LLCRMHook
 
 
 @periodic_task(
-    run_every=(crontab(minute=0, hour=0)),
+    run_every=(crontab(minute=1, hour=0)),
     name="apps.lotus_dashboard.tasks.task_update_campaigns",
     ignore_result=True,
 )
@@ -41,42 +41,15 @@ def task_update_campaigns():
             label_campaign.save()
 
 
-@periodic_task(
-    run_every=(crontab(minute='*/20')),
-    name="apps.lotus_dashboard.tasks.task_scheduled_dashboard_sales",
-    ignore_result=True,
-)
-def task_scheduled_dashboard_sales():
-    today = timezone.datetime.now().date()
-    yesterday = today + timezone.timedelta(-1)
-    week_start = today + timezone.timedelta(-today.weekday())
-
-    crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list:
-        task_get_dashboard_sales.delay(crm.id, today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-        task_get_dashboard_sales.delay(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-        if not CrmResult.objects.filter(from_date=yesterday, to_date=yesterday, crm=crm).exists():
-            task_get_dashboard_sales.delay(crm.id, yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'))
-
-
-@task(
-    name="apps.lotus_dashboard.tasks.task_get_dashboard_sales",
-    ignore_result=True,
-)
-def task_get_dashboard_sales(crm_id, from_date, to_date):
-    print('get_dashboard_sales', crm_id, from_date, to_date)
-    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
-
-    llcrm_hook = LLCRMHook(crm_id)
-    crm_results = llcrm_hook.get_crm_sales(from_date, to_date)
+def save_crm_results(crm_results, from_date, to_date, crm_id):
     for result in crm_results:
         try:
-            crm_result = CrmResult.objects.get(from_date=from_date_, to_date=to_date_, crm_id=crm_id, label_id=result['label_id'])
+            crm_result = CrmResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id,
+                                               label_id=result['label_id'])
         except CrmResult.DoesNotExist:
             crm_result = CrmResult()
-            crm_result.from_date = from_date_
-            crm_result.to_date = to_date_
+            crm_result.from_date = from_date
+            crm_result.to_date = to_date
             crm_result.crm_id = crm_id
             crm_result.label_id = result['label_id']
         crm_result.goal = result['label_goal']
@@ -94,6 +67,35 @@ def task_get_dashboard_sales(crm_id, from_date, to_date):
         crm_result.declined = result['declined']
         crm_result.gross_order = result['gross_order']
         crm_result.save()
+
+
+@periodic_task(
+    run_every=(crontab(minute='*/19')),
+    name="apps.lotus_dashboard.tasks.task_get_dashboard_sales",
+    ignore_result=True,
+)
+def task_get_dashboard_sales():
+    today = timezone.datetime.now().date()
+    yesterday = today + timezone.timedelta(-1)
+    week_start = today + timezone.timedelta(-today.weekday())
+
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    for crm in crm_list:
+        print(crm)
+        llcrm_hook = LLCRMHook(crm.id)
+
+        # Week To Date
+        crm_results = llcrm_hook.get_crm_sales(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+        save_crm_results(crm_results, week_start, today, crm.id)
+
+        # Today
+        crm_results = llcrm_hook.get_crm_sales(today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+        save_crm_results(crm_results, today, today, crm.id)
+
+        # Yesterday
+        if not CrmResult.objects.filter(from_date=yesterday, to_date=yesterday, crm=crm).exists():
+            crm_results = llcrm_hook.get_crm_sales(yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'))
+            save_crm_results(crm_results, yesterday, yesterday, crm.id)
 
 
 def task_get_initial_reports(from_date, to_date, cycle=1):
@@ -181,46 +183,54 @@ def task_get_rebill_reports(from_date, to_date, cycle=2):
         rebill_result.save()
 
 
+def save_cap_update_results(results, from_date, to_date, crm_id):
+    try:
+        cap_update_result = CapUpdateResult.objects.get(from_date=from_date, to_date=to_date, crm=crm_id)
+    except CapUpdateResult.DoesNotExist:
+        cap_update_result = CapUpdateResult()
+        cap_update_result.from_date = from_date
+        cap_update_result.to_date = to_date
+        cap_update_result.crm_id = crm_id
+    cap_update_result.result = str(results)
+    cap_update_result.save()
+
+
 @periodic_task(
-    run_every=(crontab(minute='*/60')),
-    name="apps.lotus_dashboard.tasks.task_scheduled_get_cap_update",
+    run_every=(crontab(minute='*/59')),
+    name="apps.lotus_dashboard.tasks.task_get_sales_report",
     ignore_result=True,
 )
-def task_scheduled_get_cap_update():
+def task_get_sales_report():
     today = timezone.datetime.now().date()
     yesterday = today + timezone.timedelta(-1)
     week_start = today + timezone.timedelta(-today.weekday())
 
     crm_list = CrmAccount.objects.active_crm_accounts()
     for crm in crm_list:
-        task_get_sales_report.delay(crm.id, today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-        task_get_sales_report.delay(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+        print(crm)
+        llcrm_hook = LLCRMHook(crm.id)
+
+        # Week To Date
+        results = []
+        campaign_results = llcrm_hook.get_sales_report_for_cap_update(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'), '', '', '', '')
+        for campaign_result in campaign_results[:-1]:
+            sub_result = llcrm_hook.get_sales_report_for_cap_update(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'), '', '1', campaign_result['id'], '0')
+            results.append([int(campaign_result['id']), sub_result[:-1]])
+        save_cap_update_results(results, week_start, today, crm.id)
+
+        # Today
+        results = []
+        campaign_results = llcrm_hook.get_sales_report_for_cap_update(today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'), '', '', '', '')
+        for campaign_result in campaign_results[:-1]:
+            sub_result = llcrm_hook.get_sales_report_for_cap_update(today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'), '', '1', campaign_result['id'], '0')
+            results.append([int(campaign_result['id']), sub_result[:-1]])
+        save_cap_update_results(results, today, today, crm.id)
+
+        # Yesterday
         if not CapUpdateResult.objects.filter(from_date=yesterday, to_date=yesterday, crm=crm).exists():
-            task_get_sales_report.delay(crm.id, yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'))
-
-
-@task(
-    name="apps.lotus_dashboard.tasks.task_get_sales_report",
-    ignore_result=True,
-)
-def task_get_sales_report(crm_id, from_date, to_date, campaign_id='', aff='', f='', sf=''):
-    print('get_cap_update_result', crm_id, from_date, to_date)
-    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
-
-    results = []
-    llcrm_hook = LLCRMHook(crm_id)
-    campaign_results = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '', '', '')
-    for campaign_result in campaign_results[:-1]:
-        sub_result = llcrm_hook.get_sales_report_for_cap_update(from_date, to_date, '', '1', campaign_result['id'], '0')
-        results.append([int(campaign_result['id']), sub_result[:-1]])
-
-    try:
-        cap_update_result = CapUpdateResult.objects.get(from_date=from_date_, to_date=to_date_, crm=crm_id)
-    except CapUpdateResult.DoesNotExist:
-        cap_update_result = CapUpdateResult()
-        cap_update_result.from_date = from_date_
-        cap_update_result.to_date = to_date_
-        cap_update_result.crm_id = crm_id
-    cap_update_result.result = str(results)
-    cap_update_result.save()
+            results = []
+            campaign_results = llcrm_hook.get_sales_report_for_cap_update(yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'), '', '', '', '')
+            for campaign_result in campaign_results[:-1]:
+                sub_result = llcrm_hook.get_sales_report_for_cap_update(yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'), '', '1', campaign_result['id'], '0')
+                results.append([int(campaign_result['id']), sub_result[:-1]])
+            save_cap_update_results(results, yesterday, yesterday, crm.id)

@@ -221,12 +221,7 @@ def view_update_campaigns(request):
 
 
 def view_get_dashboard_sales(request):
-    today = timezone.datetime.now().date()
-    week_start = today + timezone.timedelta(-today.weekday())
-
-    crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list:
-        task_get_dashboard_sales(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    task_get_dashboard_sales()
     return redirect('lotus_dashboard:dashboard')
 
 
@@ -246,10 +241,5 @@ def view_get_rebill_reports(request):
 
 
 def view_get_cap_update_result(request):
-    today = timezone.datetime.now().date()
-    week_start = today + timezone.timedelta(-today.weekday())
-
-    crm_list = CrmAccount.objects.active_crm_accounts()
-    for crm in crm_list:
-        task_get_sales_report(crm.id, week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    task_get_sales_report()
     return redirect('lotus_dashboard:cap_update')

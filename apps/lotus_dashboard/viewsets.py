@@ -80,8 +80,8 @@ class CapUpdateList(APIView):
                 LEFT JOIN lotus_dashboard_crmaccount pca ON po.crm_id = pca.id
                 ) po ON pag.offer_id = po.id 
             ORDER BY
-                2,
-                3
+                5,
+                6
         ''')
         results = dict_fetchall(cursor)
         for result in results:

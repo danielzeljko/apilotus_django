@@ -20,7 +20,7 @@ crm_match = {
 }
 
 dash_conn = pymysql.connect(
-    host="142.93.193.208",
+    host="dash.apilotus.com",
     database="commercials_apilotus",
     user="root",
     password="apilotusdb123456",
@@ -63,16 +63,15 @@ for crm in dash_crms:
             offer_id = pro_cursor.fetchone()[0]
 
         offer_strings = offer[3].split(',')
-        print(offer_strings)
+        # print(offer_strings)
         for offer_string in offer_strings:
             initial = offer_string.split('_')[0]
             campaign_id = int(offer_string.split('_')[1])
-            print(campaign_id)
             query = "SELECT id FROM lotus_dashboard_labelcampaign WHERE crm_id=" + str(crm_id) + " AND campaign_id=" + str(campaign_id)
             pro_cursor.execute(query)
             campaign_id = pro_cursor.fetchone()
             if campaign_id is None:
-                print('not exist')
+                print('not exist', initial, campaign_id)
                 continue
             campaign_id = campaign_id[0]
 
@@ -82,36 +81,42 @@ for crm in dash_crms:
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step1(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
             elif initial == 'step2':
                 query = "SELECT * FROM lotus_dashboard_offer_step2 WHERE offer_id='{}' AND labelcampaign_id={}".format
                 pro_cursor.execute(query(offer_id, campaign_id))
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step2(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
             elif initial == 'step1pp':
                 query = "SELECT * FROM lotus_dashboard_offer_step1_prepaids WHERE offer_id='{}' AND labelcampaign_id={}".format
                 pro_cursor.execute(query(offer_id, campaign_id))
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step1_prepaids(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
             elif initial == 'step2pp':
                 query = "SELECT * FROM lotus_dashboard_offer_step2_prepaids WHERE offer_id='{}' AND labelcampaign_id={}".format
                 pro_cursor.execute(query(offer_id, campaign_id))
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step2_prepaids(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
             elif initial == 'step1tab':
                 query = "SELECT * FROM lotus_dashboard_offer_step1_tablet WHERE offer_id='{}' AND labelcampaign_id={}".format
                 pro_cursor.execute(query(offer_id, campaign_id))
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step1_tablet(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
             elif initial == 'step2tab':
                 query = "SELECT * FROM lotus_dashboard_offer_step2_tablet WHERE offer_id='{}' AND labelcampaign_id={}".format
                 pro_cursor.execute(query(offer_id, campaign_id))
                 if pro_cursor.rowcount == 0:
                     query = "INSERT INTO lotus_dashboard_offer_step2_tablet(offer_id, labelcampaign_id) VALUES ({}, {})".format
                     pro_cursor.execute(query(offer_id, campaign_id))
+                    print(initial, offer_id, campaign_id)
 
 dash_cursor.close()
 dash_conn.close()

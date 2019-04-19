@@ -20,7 +20,7 @@ crm_match = {
 }
 
 dash_conn = pymysql.connect(
-    host="142.93.193.208",
+    host="dash.apilotus.com",
     database="commercials_apilotus",
     user="root",
     password="apilotusdb123456",
@@ -34,8 +34,6 @@ pro_conn = psycopg2.connect(
     password="1g2cp0uk",
 )
 pro_cursor = pro_conn.cursor()
-
-ok = True
 
 query = "SELECT * FROM primary_crm_account"
 dash_cursor.execute(query)
@@ -73,7 +71,6 @@ for dash_crm in dash_crms:
                 if len(a) == 2:
                     campaign_type = int(a[0])
                     label_id = int(a[1])
-                    print(campaign[2], campaign_type, label_id)
                     campaign_types.append(campaign_type)
                     label_ids.append(label_id)
 
@@ -90,14 +87,16 @@ for dash_crm in dash_crms:
                     elif label_id == 31:
                         label_id = 6
 
-                    if ok:
+                    if item[3] == campaign_type and item[6] == label_id:
+                        pass
+                    else:
                         query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
                         pro_cursor.execute(query(campaign_type, label_id, crm_id, item[1]))
+                        print(campaign[2], campaign_type, label_id)
                 elif len(a) == 3:
                     campaign_type = int(a[0])
                     campaign_format = int(a[1])
                     label_id = int(a[2])
-                    print(campaign[2], campaign_type, campaign_format, label_id)
                     campaign_types.append(campaign_type)
                     campaign_formats.append(campaign_format)
                     label_ids.append(label_id)
@@ -120,15 +119,18 @@ for dash_crm in dash_crms:
                     elif campaign_format == 6:
                         campaign_format = 4
 
-                    if ok:
+                    if item[3] == campaign_type and item[4] == campaign_format and item[6] == label_id:
+                        pass
+                    else:
                         query = "UPDATE lotus_dashboard_labelcampaign SET campaign_type = {}, campaign_format = {}, label_id = {} WHERE crm_id = {} AND campaign_id = {}".format
                         pro_cursor.execute(query(campaign_type, campaign_format, label_id, crm_id, item[1]))
+                        print(campaign[2], campaign_type, campaign_format, label_id)
                 else:
                     print('-------------')
 
-    print(set(campaign_types), set(campaign_formats), set(label_ids))
-    print(set(dash_ids) - set(pro_ids))
-    print(len(dash_ids), count)
+    # print(set(campaign_types), set(campaign_formats), set(label_ids))
+    # print(set(dash_ids) - set(pro_ids))
+    # print(len(dash_ids), count)
 
 dash_cursor.close()
 dash_conn.close()
