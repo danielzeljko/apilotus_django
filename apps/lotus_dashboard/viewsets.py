@@ -65,8 +65,50 @@ class CapUpdateList(APIView):
                 po.crm_id,
                 po.crm_name,
                 po.sales_goal,
-
                 po.label_id
+            FROM
+                lotus_dashboard_affiliateoffer pag
+                LEFT JOIN lotus_dashboard_affiliate pa ON pag.affiliate_id = pa.id
+                LEFT JOIN (
+            SELECT
+                po.*,
+                pca.crm_name,
+                pca.sales_goal 
+            FROM
+                lotus_dashboard_offer po
+                LEFT JOIN lotus_dashboard_crmaccount pca ON po.crm_id = pca.id
+                ) po ON pag.offer_id = po.id 
+            ORDER BY
+                5,
+                6
+        ''')
+        results = dict_fetchall(cursor)
+        for result in results:
+            result['step1'] = [a.campaign_id for a in Offer.objects.get(id=result['offer_id']).step1.all()]
+
+        return JsonResponse(results, safe=False)
+
+
+class BillingList(APIView):
+    """
+        List all cap_update results.
+    """
+
+    def get(self, request, format=None):
+        cursor = connection.cursor()
+        cursor.execute('''
+            SELECT
+                pag.*,
+                pa.NAME AS affiliate_name,
+                pa.afid,
+                po.NAME AS offer_name,
+                po.crm_id,
+                po.crm_name,
+                po.sales_goal,
+                po.label_id,
+                po.type,
+                po.s1_payout AS s1_payout_,
+                po.s2_payout AS s2_payout_ 
             FROM
                 lotus_dashboard_affiliateoffer pag
                 LEFT JOIN lotus_dashboard_affiliate pa ON pag.affiliate_id = pa.id

@@ -67,10 +67,10 @@ jQuery(document).ready(function(t) {
                     from_date: t("#from_date").val(),
                     to_date: t("#to_date").val()
                 },
-                success: function(e) {
+                success: function(response) {
                     show_status("list", "", false);
                     t("#id_head_sign").html("");
-                    let data = jQuery.parseJSON(e.replace(new RegExp("'", 'g'), '"'));
+                    let data = jQuery.parseJSON(response.replace(new RegExp("'", 'g'), '"'));
                     let total_length = data.length;
 
                     if (0 === total_length)

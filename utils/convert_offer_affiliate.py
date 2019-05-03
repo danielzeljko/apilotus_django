@@ -47,7 +47,7 @@ for affiliate in dash_affiliates:
         if pro_affiliate[2] != affiliate[2]:
             print('afid different', pro_affiliate)
     else:
-        query = "INSERT INTO lotus_dashboard_affiliate(name, afid) VALUES ('{}', {})".format
+        query = "INSERT INTO lotus_dashboard_affiliate(name, afid) VALUES ('{}', '{}')".format
         pro_cursor.execute(query(affiliate[1], affiliate[2]))
         print('inserted affiliate -', affiliate[1], affiliate[2], affiliate[3], affiliate[4])
 
@@ -72,7 +72,7 @@ for dash_affiliate in dash_affiliates:
             dash_offer = dash_cursor.fetchone()
 
             query = "SELECT * FROM lotus_dashboard_offer WHERE name='{}' AND crm_id={}".format
-            pro_cursor.execute(query(dash_offer[1], crm_match[dash_offer[2]]))
+            pro_cursor.execute(query(dash_offer[1].replace("'", "''"), crm_match[dash_offer[2]]))
             pro_offer = pro_cursor.fetchone()
             pro_offer_id = pro_offer[0]
 

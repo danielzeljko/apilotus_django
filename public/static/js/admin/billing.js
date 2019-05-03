@@ -84,91 +84,78 @@ jQuery(document).ready(function(t) {
             show_waiting(true);
             t.ajax({
                 type: "GET",
-                url: "../daemon/ajax_admin/crm_list.php",
+                url: "/admin/ajax_crm_list",
                 data: {},
-                success: function (e) {
-                    show_waiting(false);
-                    if ("error" == e) {
-                        show_alert("Cannot load CRM site information.");
-                    }
-                    else if ("no_cookie" == e) {
-                        window.location.href = "../../admin/login.php";
-                    }
-                    else {
-                        var crm_list = jQuery.parseJSON(e);
-                        show_waiting(true);
-                        t.ajax({
-                            type: "GET",
-                            url: "../daemon/ajax_admin/billing_list.php",
-                            data: {
-                                date_type: date_type,
-                                from_date: t("#from_date").val(),
-                                to_date: t("#to_date").val()
-                            },
-                            success: function(e) {
-                                show_waiting(false);
-                                if ("no_cookie" === e)
-                                    return void (window.location.href = "../../admin/login.php");
+                success: function (response) {
+                    let crm_list = response;
+                    t.ajax({
+                        type: "GET",
+                        url: "/admin/ajax_billing_list",
+                        data: {
+                            date_type: date_type,
+                            from_date: t("#from_date").val(),
+                            to_date: t("#to_date").val()
+                        },
+                        success: function(response) {
+                            show_waiting(false);
+                            billing_list = response;
 
-                                billing_list = jQuery.parseJSON(e);
-
-                                if (0 === billing_list.length) {
-                                    show_alert("There is no billing data.");
-                                    return;
-                                }
-
-                                let html = "";
-
-                                let affiliate_id = -1;
-                                for (let i = 0; i < billing_list.length; i++) {
-                                    let billing = billing_list[i];
-                                    // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
-                                    if (affiliate_id !== billing['affiliate_id']) {
-                                        if (-1 !== affiliate_id)
-                                            html += '</div></div></div>';
-                                        affiliate_id = billing['affiliate_id'];
-
-                                        html += '<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 c_item"><div>';
-                                        html += '<button type="button" class="btn btn-link btn-sm btn_affiliation_edit payment_badge_blue" id="aedit_' + billing['affiliate_id'] + '" data-toggle="modal" data-target="#affiliation_edit_modal" style="font-size: 18px; font-weight: bold; padding-left: 0;">' + billing['affiliate_name'] + '</button>';
-                                        if (null == billing['afid'])
-                                            html += '<p>AFIDS:</p>';
-                                        else
-                                            html += '<p>AFIDS: ' + billing['afid'] + '</p>';
-                                        html += '<p style="margin-top: 5px;" id="tti_' + billing['affiliate_id'] + '">Total To Invoice: $ 0.00</p>';
-
-                                        html += '<h4 style="color: #6772e5">Sales Progress</h4>';
-                                        html += '<div class="row c_cnt_header">';
-                                        html += '<div style="color: #6772e5; text-align: center;" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">OFFER</div>';
-                                        html += '<div style="color: #6772e5" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">SALES</div>';
-                                        html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">CPA</div>';
-                                        html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">TOTAL</div>';
-                                        html += '</div>';
-                                        html += '<div class="c_cnt_list" id="cnt_list_' + billing['affiliate_id'] + '">';
-                                    }
-                                    html += '<div class="row">';
-                                    html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + billing['offer_name'] + '</div>';
-                                    html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2" id="capgoal_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"></div>';
-                                    if (null == billing['s1_payout'] || 0 == billing['s1_payout'])
-                                        html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + billing['s1_payout_'] + '.00</div>';
-                                    else
-                                        html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"><b>$ ' + billing['s1_payout'] + '.00</b></div>';
-                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="total_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"></div>';
-                                    html += '</div>';
-                                }
-                                t(".div_billing_body").html(html);
-
-                                if (billing_list.length > 0) {
-                                    for (let i = 0; i < crm_list.length; i++) {
-                                        get_billing_goal_list(crm_list[i][0]);
-                                    }
-                                }
-                            },
-                            failure: function() {
-                                show_waiting(false);
-                                show_alert("Cannot load Affiliate Sales Goal information.")
+                            if (0 === billing_list.length) {
+                                show_alert("There is no billing data.");
+                                return;
                             }
-                        });
-                    }
+
+                            let html = "";
+
+                            let affiliate_id = -1;
+                            for (let i = 0; i < billing_list.length; i++) {
+                                let billing = billing_list[i];
+                                // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
+                                if (affiliate_id !== billing['affiliate_id']) {
+                                    if (-1 !== affiliate_id)
+                                        html += '</div></div></div>';
+                                    affiliate_id = billing['affiliate_id'];
+
+                                    html += '<div class="col-lg-4 col-md-6 col-sm-12 col-xs-12 c_item"><div>';
+                                    html += '<button type="button" class="btn btn-link btn-sm btn_affiliation_edit payment_badge_blue" id="aedit_' + billing['affiliate_id'] + '" data-toggle="modal" data-target="#affiliation_edit_modal" style="font-size: 18px; font-weight: bold; padding-left: 0;">' + billing['affiliate_name'] + '</button>';
+                                    if (null == billing['afid'])
+                                        html += '<p>AFIDS:</p>';
+                                    else
+                                        html += '<p>AFIDS: ' + billing['afid'] + '</p>';
+                                    html += '<p style="margin-top: 5px;" id="tti_' + billing['affiliate_id'] + '">Total To Invoice: $ 0.00</p>';
+
+                                    html += '<h4 style="color: #6772e5">Sales Progress</h4>';
+                                    html += '<div class="row c_cnt_header">';
+                                    html += '<div style="color: #6772e5; text-align: center;" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">OFFER</div>';
+                                    html += '<div style="color: #6772e5" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">SALES</div>';
+                                    html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">CPA</div>';
+                                    html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">TOTAL</div>';
+                                    html += '</div>';
+                                    html += '<div class="c_cnt_list" id="cnt_list_' + billing['affiliate_id'] + '">';
+                                }
+                                html += '<div class="row">';
+                                html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + billing['offer_name'] + '</div>';
+                                html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2" id="capgoal_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"></div>';
+                                if (null == billing['s1_payout'] || 0 == billing['s1_payout'])
+                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + billing['s1_payout_'] + '.00</div>';
+                                else
+                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"><b>$ ' + billing['s1_payout'] + '.00</b></div>';
+                                html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="total_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '"></div>';
+                                html += '</div>';
+                            }
+                            t(".div_billing_body").html(html);
+
+                            if (billing_list.length > 0) {
+                                for (let i = 0; i < crm_list.length; i++) {
+                                    get_billing_goal_list(crm_list[i]['id']);
+                                }
+                            }
+                        },
+                        failure: function() {
+                            show_waiting(false);
+                            show_alert("Cannot load Affiliate Sales Goal information.")
+                        }
+                    });
                 },
                 failure: function() {
                     show_waiting(false);
@@ -181,92 +168,85 @@ jQuery(document).ready(function(t) {
     function get_billing_goal_list(crm_id) {
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/billing_goal_list.php",
+            url: "/admin/api/cap_update_result",
             data: {
                 crm_id: crm_id,
                 from_date: t("#from_date").val(),
                 to_date: t("#to_date").val()
             },
-            success: function(e) {
-                let goal = jQuery.parseJSON(e);
+            success: function(response) {
+                let goal = response;
 
-                if (goal[0] === 'error') {
-                    show_alert('Cannot load sales information of ' + goal[1]);
-                }
-                else if (goal[0] === 'no_cookie') {
-                    window.location.href = '../../admin/login.php';
-                }
-                else {
-                    for (let i = 0; i < billing_list.length; i++) {
-                        let billing = billing_list[i];
-                        if (goal[1] == billing['crm_id']) {
-                            let count = 0;
-                            let afids = billing['afid'].split(',');
-                            let campaign_ids = billing['campaign_ids'].split(',');
+                if (goal.length === 0)
+                    return;
 
-                            let specials = {};
+                goal = goal[0];
+                for (let i = 0; i < billing_list.length; i++) {
+                    let billing = billing_list[i];
+                    if (goal['crm'] === billing['crm_id']) {
+                        let count = 0;
+                        let afids = billing['afid'].split(',');
+                        let campaign_ids = billing['step1'];
+                        let goal_data = jQuery.parseJSON(goal['result'].replace(new RegExp("'", 'g'), '"'));
+                        let specials = {};
 
-                            for (let k = 0; k < goal[2].length; k++) {
-                                let campaign_prospects = goal[2][k];
-                                for (let l = 0; l < campaign_ids.length; l++) {
-                                    if ("step1" === campaign_ids[l].split('_')[0]) {
-                                        let campaign_id = campaign_ids[l].split('_')[1];
-                                        if (campaign_id == campaign_prospects[0]) {
-                                            for (let m = 0; m < campaign_prospects[1].length; m++) {
-                                                for (let n = 0; n < afids.length; n++) {
-                                                    if (campaign_prospects[1][m][0] == afids[n].split('(')[0]) {
-                                                        if (afids[n].split('(').length == 2) {
-                                                            let special_id = afids[n];
-                                                            special_id = afids[n].split('(')[0];
-                                                            let special_price = afids[n].split('(')[1];
-                                                            special_price = special_price.substr(0, special_price.length - 1);
+                        for (let k = 0; k < goal_data.length; k++) {
+                            let campaign_prospects = goal_data[k];
+                            for (let l = 0; l < campaign_ids.length; l++) {
+                                if (campaign_ids[l] === campaign_prospects[0]) {
+                                    for (let m = 0; m < campaign_prospects[1].length; m++) {
+                                        for (let n = 0; n < afids.length; n++) {
+                                            if (campaign_prospects[1][m]['id'] === afids[n].split('(')[0]) {
+                                                if (afids[n].split('(').length === 2) {
+                                                    let special_id = afids[n];
+                                                    special_id = afids[n].split('(')[0];
+                                                    let special_price = afids[n].split('(')[1];
+                                                    special_price = special_price.substr(0, special_price.length - 1);
 
-                                                            if (special_id in specials)
-                                                                specials[special_id] = [special_price, specials[special_id][1] + parseInt(campaign_prospects[1][m][2])];
-                                                            else
-                                                                specials[special_id] = [special_price, parseInt(campaign_prospects[1][m][2])];
-                                                        }
-                                                        else {
-                                                            count += campaign_prospects[1][m][2];
-                                                        }
-                                                    }
+                                                    if (special_id in specials)
+                                                        specials[special_id] = [special_price, specials[special_id][1] + parseInt(campaign_prospects[1][m]['initial_customers'])];
+                                                    else
+                                                        specials[special_id] = [special_price, parseInt(campaign_prospects[1][m]['initial_customers'])];
+                                                }
+                                                else {
+                                                    count += campaign_prospects[1][m]['initial_customers'];
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-                            billing['sales'] = count;
-                            $("#capgoal_" + billing['affiliate_id'] + '_' + billing['offer_id']).html(count ? count.toString() : '');
-                            let price = 0;
-                            if (null == billing['s1_payout'] || 0 == billing['s1_payout'])
-                                price = billing['s1_payout_'];
-                            else
-                                price = billing['s1_payout'];
-                            $("#total_" + billing['affiliate_id'] + '_' + billing['offer_id']).html(
-                                '$ ' + (count ? ((count * price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')) : '-')
-                            );
-
-                            let tti = parseFloat($("#tti_" + billing['affiliate_id']).html().substring(20).replace(',', ''));
-                            tti += parseFloat(count * price);
-
-                            if (!$.isEmptyObject(specials)) {
-                                for (let key in specials) {
-                                    console.log(key, specials[key]);
-                                    let html = '<div class="row">';
-                                    html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + billing['offer_name'] + ' - ID ' + key + '</div>';
-                                    html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2" id="capgoal_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">' + specials[key][1] + '</div>';
-                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + specials[key][0] + '.00</div>';
-                                    html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="total_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + ((specials[key][0] * specials[key][1]).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')) + '</div>';
-                                    html += '</div>';
-
-                                    tti += parseFloat(specials[key][0] * specials[key][1]);
-                                    $('#cnt_list_' + billing['affiliate_id']).append(html);
-                                }
-                            }
-
-                            $("#tti_" + billing['affiliate_id']).html('Total To Invoice: $ ' + tti.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
                         }
+                        billing['sales'] = count;
+                        $("#capgoal_" + billing['affiliate_id'] + '_' + billing['offer_id']).html(count ? count.toString() : '');
+                        let price = 0;
+                        if (null == billing['s1_payout'] || 0 === billing['s1_payout'])
+                            price = billing['s1_payout_'];
+                        else
+                            price = billing['s1_payout'];
+                        $("#total_" + billing['affiliate_id'] + '_' + billing['offer_id']).html(
+                            '$ ' + (count ? ((count * price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')) : '-')
+                        );
+
+                        let tti = parseFloat($("#tti_" + billing['affiliate_id']).html().substring(20).replace(',', ''));
+                        tti += parseFloat(count * price);
+
+                        if (!$.isEmptyObject(specials)) {
+                            for (let key in specials) {
+                                console.log(key, specials[key]);
+                                let html = '<div class="row">';
+                                html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + billing['offer_name'] + ' - ID ' + key + '</div>';
+                                html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2" id="capgoal_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">' + specials[key][1] + '</div>';
+                                html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="cpa_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + specials[key][0] + '.00</div>';
+                                html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="total_' + billing['affiliate_id'] + '_' + billing['offer_id'] + '">$ ' + ((specials[key][0] * specials[key][1]).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')) + '</div>';
+                                html += '</div>';
+
+                                tti += parseFloat(specials[key][0] * specials[key][1]);
+                                $('#cnt_list_' + billing['affiliate_id']).append(html);
+                            }
+                        }
+
+                        $("#tti_" + billing['affiliate_id']).html('Total To Invoice: $ ' + tti.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
                     }
                 }
             },
@@ -282,42 +262,15 @@ jQuery(document).ready(function(t) {
     }
 
     async function get_export_result() {
-        let affiliate_id = -1;
-        let result;
-        for (let i = 0; i < billing_list.length; i++) {
-            let billing = billing_list[i];
-            if (affiliate_id !== billing['affiliate_id']) {
-                if (0 !== i) {
-                    result['tti'] = '$ ' + (result['tti'].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
-                    window.location.href = "./export_billing.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val() + "&data=" + JSON.stringify(result);
-                    await sleep(2000);
-                }
-                result = {};
-                result['affiliate_name'] = billing['affiliate_name'];
-                result['afid'] = billing['afid'];
-                result['weekof'] = t("#from_date").val() + '-' + t("#to_date").val();
-                result['tti'] = 0;
-                result['offers'] = [];
-                affiliate_id = billing['affiliate_id'];
-            }
+        let affiliate_ids_have_offer = billing_list.map(function(item) {
+            return item['affiliate_id'];
+        });
+        affiliate_ids_have_offer = affiliate_ids_have_offer.filter((v, i, a) => a.indexOf(v) === i);
 
-            let cpa = 0;
-            if (null == billing['s1_payout'] || 0 == billing['s1_payout'])
-                cpa = billing['s1_payout_'];
-            else
-                cpa = billing['s1_payout'];
-            result['offers'].push({
-                'offer': billing['offer_name'],
-                'sales': billing['sales'],
-                'cpa': '$ ' + cpa + '.00',
-                'total': '$ ' + (billing['sales'] ? ((billing['sales'] * cpa).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,')) : '-'),
-            });
-
-            result['tti'] += parseFloat(billing['sales'] * cpa);
+        for (let i = 0; i < affiliate_ids_have_offer.length; i++) {
+            window.location.href = "/admin/export_billing_report/?affiliate_id=" + affiliate_ids_have_offer[i] + "&from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
+            await sleep(2000);
         }
-        result['tti'] = '$ ' + (result['tti'].toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,'));
-        await sleep(1000);
-        window.location.href = "./export_billing.php?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val() + "&data=" + JSON.stringify(result);
     }
 
     t(".input-daterange").datepicker({});
@@ -331,11 +284,11 @@ jQuery(document).ready(function(t) {
         get_billing_list();
     });
     t(".btn_billing_export").click(function() {
-        let result = get_export_result();
+        get_export_result();
     });
 
 
-    let loading_gif = '<img src="../images/loading.gif" style="width:22px;height:22px;">';
+    let loading_gif = '<img src="/static/images/loading.gif" style="width: 22px; height: 22px;">';
     let from_date = "";
     let to_date = "";
     let billing_list = null;
@@ -354,18 +307,11 @@ jQuery(document).ready(function(t) {
         show_waiting(true);
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/offer_list.php",
+            url: "/admin/api/offer",
             data: {},
-            success: function (e) {
+            success: function (response) {
                 show_waiting(false);
-                if ("no_cookie" === e)
-                    window.location.href = "../../admin/login.php";
-                else if ("error" === e) {
-                    show_alert("Offers cannot be loaded.");
-                }
-                else {
-                    offers = jQuery.parseJSON(e);
-                }
+                offers = response;
             },
             failure: function () {
                 show_waiting(false);
@@ -378,14 +324,11 @@ jQuery(document).ready(function(t) {
         $(".table_affiliation_body").html("");
         t.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/setting_affiliation_list.php",
+            url: "/admin/ajax_affiliation_list",
             data: {},
-            success: function (e) {
+            success: function (response) {
                 show_waiting(false);
-                if ("no_cookie" === e)
-                    return void (window.location.href = "../../admin/login.php");
-
-                affiliations = jQuery.parseJSON(e);
+                affiliations = response;
             },
             failure: function () {
                 show_waiting(false);

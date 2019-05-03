@@ -86,9 +86,9 @@ jQuery(document).ready(function(t) {
                     from_date: t("#from_date").val(),
                     to_date: t("#to_date").val()
                 },
-                success: function(e) {
+                success: function(response) {
                     show_waiting("list", !1);
-                    let data = jQuery.parseJSON(e.replace(new RegExp("'", 'g'), '"'));
+                    let data = jQuery.parseJSON(response.replace(new RegExp("'", 'g'), '"'));
                     let total_length = data.length;
 
                     if (0 === total_length)

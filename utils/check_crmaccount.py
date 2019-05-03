@@ -48,8 +48,11 @@ for dash_crm in dash_crms:
         if crm_match[dash_crm[0]] == pro_crm[0]:
             print(dash_crm[1:])
             print(pro_crm[1:])
-            if dash_crm[7] != pro_crm[7] or bool(dash_crm[8]) != pro_crm[8]:
-                print('---------')
+            for idx in range(1, 12):
+                if idx == 9:
+                    continue
+                if dash_crm[idx] != pro_crm[idx]:
+                    print(idx, dash_crm[idx], pro_crm[idx])
 
 dash_cursor.close()
 dash_conn.close()

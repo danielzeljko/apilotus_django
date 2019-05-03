@@ -385,7 +385,7 @@ jQuery(document).ready(function(t) {
         t(".position_row").each(function(e) {
             let r = t(this).prop("id");
             changed_crm_positions += ("" == changed_crm_positions ? "" : ",");
-            changed_crm_positions += r;
+            changed_crm_positions += r.slice(2);
         });
         show_waiting("sales", "", true);
         t.ajax({

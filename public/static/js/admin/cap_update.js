@@ -174,7 +174,7 @@ jQuery(document).ready(function(t) {
                 if (goal.length === 0)
                     return;
 
-                goal = goal[0]
+                goal = goal[0];
                 goals.push(goal);
                 for (let i = 0; i < cap_update_list.length; i++) {
                     let affiliate_goal = cap_update_list[i];
@@ -222,38 +222,36 @@ jQuery(document).ready(function(t) {
         let text_result = '';
         for (let i = 0; i < cap_update_list.length; i++) {
             let affiliate_goal = cap_update_list[i];
-            if (affiliate_goal_id != affiliate_goal[1]) {
-                affiliate_goal_id = affiliate_goal[1];
-                if (i != 0) text_result += '\n\n';
-                text_result += "To " + affiliate_goal[4] + '\n\n';
+            if (affiliate_goal_id !== affiliate_goal['affiliate_id']) {
+                affiliate_goal_id = affiliate_goal['affiliate_id'];
+                if (i !== 0) text_result += '\n\n';
+                text_result += "To " + affiliate_goal['affiliate_name'] + '\n\n';
                 text_result += "Here are remaining caps for the week\n\n";
             }
             for (let j = 0; j < goals.length; j++) {
                 let goal = goals[j];
-                if (goal[1] == affiliate_goal[7]) {
+                if (goal['crm'] === affiliate_goal['crm_id']) {
                     let count = 0;
-                    let afids = affiliate_goal[5].split(',');
-                    let campaign_ids = affiliate_goal[10].split(',');
-                    for (let k = 0; k < goal[2].length; k++) {
-                        let campaign_prospects = goal[2][k];
+                    let afids = affiliate_goal['afid'].split(',');
+                    let campaign_ids = affiliate_goal['step1'];
+                    let goal_data = jQuery.parseJSON(goal['result'].replace(new RegExp("'", 'g'), '"'));
+                    for (let k = 0; k < goal_data.length; k++) {
+                        let campaign_prospects = goal_data[k];
                         for (let l = 0; l < campaign_ids.length; l++) {
-                            if ("step1" === campaign_ids[l].split('_')[0]) {
-                                let campaign_id = campaign_ids[l].split('_')[1];
-                                if (campaign_id == campaign_prospects[0]) {
-                                    for (let m = 0; m < campaign_prospects[1].length; m++) {
-                                        for (let n = 0; n < afids.length; n++) {
-                                            if (campaign_prospects[1][m][0] == afids[n]) {
-                                                count += campaign_prospects[1][m][2];
-                                            }
+                            if (campaign_ids[l] === campaign_prospects[0]) {
+                                for (let m = 0; m < campaign_prospects[1].length; m++) {
+                                    for (let n = 0; n < afids.length; n++) {
+                                        if (campaign_prospects[1][m]['id'] === afids[n].split('(')[0]) {
+                                            count += campaign_prospects[1][m]['initial_customers'];
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                    text_result += affiliate_goal[6] + ' ';
-                    text_result += (parseInt(affiliate_goal[3]) - count).toString() + ' remaining ';
-                    text_result += '(' + affiliate_goal[3] + ' for the week)\n';
+                    text_result += affiliate_goal['offer_name'] + ' ';
+                    text_result += (affiliate_goal['goal'] - count).toString() + ' remaining ';
+                    text_result += '(' + affiliate_goal['goal'] + ' for the week)\n';
                 }
             }
         }

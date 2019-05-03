@@ -1,3 +1,6 @@
+from io import BytesIO
+
+import xlsxwriter
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
@@ -58,6 +61,17 @@ def view_cap_update(request):
         'crm_list': crm_list,
     }
     return render(request, 'cap/cap_update.html', context=context)
+
+
+@login_required
+def view_billing_dashboard(request):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+
+    context = {
+        'tab_name': 'Billing',
+        'crm_list': crm_list,
+    }
+    return render(request, 'billing/billing.html', context=context)
 
 
 # ajax functions
@@ -213,6 +227,97 @@ def ajax_rebill_list(request):
         return JsonResponse(rebill_result.result, safe=False)
     except RebillResult.DoesNotExist:
         return JsonResponse('[]', safe=False)
+
+
+def export_billing_report(request):
+    affiliate_id = int(request.GET['affiliate_id'])
+    from_date = request.GET['from_date']
+    to_date = request.GET['to_date']
+
+    affiliate = Affiliate.objects.get(id=affiliate_id)
+
+    output_file_name = 'billing_%s_%s-%s' % (affiliate.name, from_date.replace('/', '.'), to_date.replace('/', '.'))
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=' + output_file_name + '.xlsx'
+
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet(from_date.replace('/', '.') + '-' + to_date.replace('/', '.'))
+
+    worksheet.set_column(0, 0, 18)
+    worksheet.set_column(1, 1, 25)
+    worksheet.set_column(2, 2, 5)
+    worksheet.set_column(3, 3, 30)
+    worksheet.set_column(6, 6, 14)
+
+    cell_format = workbook.add_format({'bold': True, 'font_color': 'white', 'bg_color': '#5B9BD5'})
+    worksheet.write('A1', 'Affiliate', cell_format)
+    worksheet.write('A2', 'Affiliate ID', cell_format)
+    worksheet.write('A3', 'Week Of', cell_format)
+    worksheet.write('A4', 'Total To Invoice', cell_format)
+
+    cell_format = workbook.add_format({'align': 'left'})
+    worksheet.write('B1', affiliate.name, cell_format)
+    worksheet.write('B2', affiliate.afid, cell_format)
+    worksheet.write('B3', from_date + '-' + to_date, cell_format)
+
+    cell_format = workbook.add_format({'bold': True, 'font_color': '#006100', 'bg_color': '#C6EFCE', 'align': 'center'})
+    worksheet.write('D1', 'Offer', cell_format)
+    worksheet.write('E1', 'Sales', cell_format)
+    worksheet.write('F1', 'CPA', cell_format)
+    worksheet.write('G1', 'Total', cell_format)
+
+    from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
+    to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+
+    affiliate_offers = AffiliateOffer.objects.filter(affiliate=affiliate)
+    row = 2
+    total_tti = 0
+    for affiliate_offer in affiliate_offers:
+        offer = affiliate_offer.offer
+        cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+        worksheet.write('D' + str(row), offer.name, cell_format)
+
+        cpa = affiliate_offer.s1_payout if affiliate_offer.s1_payout else offer.s1_payout
+        worksheet.write('F' + str(row), "$ {:,.2f}".format(cpa))
+
+        try:
+            cap_update_result = CapUpdateResult.objects.get(crm=offer.crm, from_date=from_date, to_date=to_date)
+            afids = affiliate.afid.split(',')
+            campaign_ids = affiliate_offer.offer.step1.all()
+            cap_result = eval(cap_update_result.result)
+            specials = []
+
+            sales = 0
+            for prospect in cap_result:
+                for campaign_id in campaign_ids:
+                    if campaign_id.campaign_id == prospect[0]:
+                        for prospect_data in prospect[1]:
+                            for afid in afids:
+                                if prospect_data['id'] == afid.split('(')[0]:
+                                    if len(afid.split('(')) == 2:
+                                        pass
+                                    else:
+                                        sales += prospect_data['initial_customers']
+
+            cell_format = workbook.add_format({'align': 'center'})
+            worksheet.write('E' + str(row), sales if sales else None, cell_format)
+
+            tti = sales * cpa
+            worksheet.write('G' + str(row), "$ {:,.2f}".format(tti) if tti else "$  -")
+
+            total_tti += tti
+        except CapUpdateResult.DoesNotExist:
+            pass
+        row += 1
+
+    worksheet.write('B4', "$ {:,.2f}".format(total_tti))
+
+    workbook.close()
+    xlsx_data = output.getvalue()
+
+    response.write(xlsx_data)
+    return response
 
 
 def view_update_campaigns(request):

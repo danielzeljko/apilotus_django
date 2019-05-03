@@ -21,9 +21,7 @@ urlpatterns = [
     url(r'^rebill_report/$', views.view_rebill_report, name='report_rebill'),
     # url(r'^dashboard/$', views.dashboard, name='setting_campaign'),
     url(r'^cap_update/$', views.view_cap_update, name='cap_update'),
-    url(r'^dashboard/$', views.dashboard, name='cap_offers'),
-    url(r'^dashboard/$', views.dashboard, name='cap_affiliates'),
-    url(r'^dashboard/$', views.dashboard, name='billing_dashboard'),
+    url(r'^billing/$', views.view_billing_dashboard, name='billing_dashboard'),
     url(r'^dashboard/$', views.dashboard, name='billing_offers'),
     url(r'^dashboard/$', views.dashboard, name='billing_affiliates'),
     url(r'^dashboard/$', views.dashboard, name='billing_reports'),
@@ -44,8 +42,11 @@ urlpatterns = [
     url(r'^ajax_initial_list/$', views.ajax_initial_list, name='url_initial_list'),
     url(r'^ajax_rebill_list/$', views.ajax_rebill_list, name='url_rebill_list'),
 
+    url(r'^export_billing_report/$', view=views.export_billing_report),
+
     # ajax requests in viewsets
     url(r'^ajax_cap_update_list/$', view=CapUpdateList.as_view(), name='url_cap_update_list'),
+    url(r'^ajax_billing_list/$', view=BillingList.as_view(), name='url_billing_list'),
     url(r'^ajax_affiliation_list/$', view=AffiliationList.as_view(), name='url_affiliation_list'),
 
     # tasks
