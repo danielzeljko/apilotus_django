@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load dashboard_tags %}
+
+{% block page_title %}Affiliates{% endblock %}
+
+{% block modal_include %}
+{% include 'cap/affiliate_modal.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-xs-2"></div>
+    <div class="col-xs-8">
+        <div class="crm_board">
+            <div class="row crm_board_title">
+                <div class="col-xs-3" style="padding-left: 0">Affiliates</div>
+                <div class="col-xs-6">
+                    <input type="text" class="form-control input-sm search_affiliates" placeholder="Search by Affiliate name, AFID(s), Offer name, Cap" style="margin-left: 20px;">
+                </div>
+                <div class="col-xs-3" style="text-align:right;">
+                    <div class="affiliation_waiting" style="display: inline;"></div>
+                    <button type="button" class="btn btn-default btn-sm btn_affiliation_add" style="font-family: 'Varela Round', sans-serif;" data-toggle="modal" data-target="#affiliation_add_modal">
+                        <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>&nbsp;Add Affiliate
+                    </button>
+                </div>
+            </div>
+            <div class="alert alert-warning affiliation_alert" role="alert" style="display:none"></div>
+
+            <div class="row crm_board_row">
+                <div class="col-xs-4"></div>
+                <div class="col-xs-4">
+                    <div class="input-group">
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle crm_main_toggle_button" data-toggle="dropdown" aria-expanded="false" style="min-width:200px">
+                                {% if crm_list %}
+                                    All Clients
+                                {% else %}
+                                    None Client
+                                {% endif %}
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu crm_main_dropdown_menu" role="menu">
+                                {% if crm_list %}
+                                    <li><a href="#" id="0" class="crm_main_dropdown_list">All Clients</a></li>
+                                    {% for crm in crm_list %}
+                                        <li><a href="#" id="{{ crm.id }}" class="crm_main_dropdown_list">{{ crm }}</a></li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </span>
+                        <span class="input-group-btn">
+                            <button type="button" class="btn btn-default btn-sm dropdown-toggle vertical_main_toggle_button" data-toggle="dropdown" aria-expanded="false" style="min-width:200px; margin-left: 10px;">
+                                {% if vertical_labels %}
+                                    All Vertical Labels
+                                {% else %}
+                                    None Vertical Label
+                                {% endif %}
+                                <span class="caret"></span>
+                            </button>
+                            <ul class="dropdown-menu vertical_main_dropdown_menu" role="menu">
+                                {% if vertical_labels %}
+                                    <li><a href="#" id="0" class="vertical_main_dropdown_list">All Vertical Labels</a></li>
+                                    {% for vertical_label in vertical_labels %}
+                                        <li><a href="#" id="{{ vertical_label.id }}" class="vertical_main_dropdown_list">{{ vertical_label }}</a></li>
+                                    {% endfor %}
+                                {% endif %}
+                            </ul>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <table class="table table-hover" style="margin-top:10px;">
+                <thead>
+                <tr>
+                    <th style="width: 400px">Affiliate</th>
+                    <th>AFIDs</th>
+                    <th>Offer Name</th>
+                    <th>Client</th>
+                    <th>Offer CAP</th>
+                </tr>
+                </thead>
+                <tbody class="table_affiliation_body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-xs-2">
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript" src="{% static 'js/admin/setting_affiliation.js' %}"></script>
+{% endblock %}

@@ -341,9 +341,9 @@ jQuery(document).ready(function(t) {
                 crm_ids: ids,
                 crm_goals: goals
             },
-            success: function(result) {
+            success: function(response) {
                 show_waiting("sales", "", false);
-                if ("success" === result)
+                if ("OK" === response)
                     show_result();
             },
             failure: function() {
@@ -413,8 +413,8 @@ jQuery(document).ready(function(t) {
         let html = "";
         for (let i = 0; i < crm_list.length; i++) {
             html += '<div class="row" style="margin-bottom:5px;">';
-            html += '<div class="col-xs-6 modal_input_label">' + crm_list[i]['crm_name'] + "</div>";
-            html += '<div class="col-xs-6"><input type="text" id="editgoal_' + crm_list[i]['id'] + '" class="form-control input-sm edit_goals" value="' + crm_list[i]['sales_goal'] + '"></div>';
+            html += '<div class="col-xs-7 modal_input_label">' + crm_list[i]['crm_name'] + "</div>";
+            html += '<div class="col-xs-5"><input type="text" id="editgoal_' + crm_list[i]['id'] + '" class="form-control input-sm edit_goals" value="' + crm_list[i]['sales_goal'] + '"></div>';
             html += "</div>";
         }
         t(".quick_edit_body").html(html);

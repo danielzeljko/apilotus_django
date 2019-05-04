@@ -2,7 +2,7 @@ from django.conf.urls import url, include
 
 from rest_framework import routers
 
-from lotus_dashboard import views
+from lotus_dashboard import views, ajax_apis
 from lotus_dashboard.viewsets import *
 
 app_name = 'lotus_dashboard'
@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^rebill_report/$', views.view_rebill_report, name='report_rebill'),
     # url(r'^dashboard/$', views.dashboard, name='setting_campaign'),
     url(r'^cap_update/$', views.view_cap_update, name='cap_update'),
+    url(r'^affiliates/$', views.view_affiliates, name='affiliates'),
     url(r'^billing/$', views.view_billing_dashboard, name='billing_dashboard'),
     url(r'^dashboard/$', views.dashboard, name='billing_offers'),
     url(r'^dashboard/$', views.dashboard, name='billing_affiliates'),
@@ -43,6 +44,12 @@ urlpatterns = [
     url(r'^ajax_rebill_list/$', views.ajax_rebill_list, name='url_rebill_list'),
 
     url(r'^export_billing_report/$', view=views.export_billing_report),
+
+    # ajax requests in ajax_apis
+    url(r'^ajax_add_affiliate/$', ajax_apis.ajax_add_affiliate),
+    url(r'^ajax_edit_affiliate/$', ajax_apis.ajax_edit_affiliate),
+    url(r'^ajax_delete_affiliate/$', ajax_apis.ajax_delete_affiliate),
+    url(r'^ajax_affiliate_special_code/$', ajax_apis.ajax_affiliate_special_code),
 
     # ajax requests in viewsets
     url(r'^ajax_cap_update_list/$', view=CapUpdateList.as_view(), name='url_cap_update_list'),

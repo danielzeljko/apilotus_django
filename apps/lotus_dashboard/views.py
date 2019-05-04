@@ -52,15 +52,23 @@ def view_rebill_report(request):
 
 @login_required
 def view_cap_update(request):
-    rebill_list = [a.crm.id for a in Rebill.objects.all()]
-    crm_list = CrmAccount.objects.active_crm_accounts()
-    crm_list = [a for a in crm_list if a.id in rebill_list]
-
     context = {
         'tab_name': 'CAP Update',
-        'crm_list': crm_list,
     }
     return render(request, 'cap/cap_update.html', context=context)
+
+
+@login_required
+def view_affiliates(request):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+    vertical_labels = OfferLabel.objects.all()
+
+    context = {
+        'tab_name': 'Affiliate Settings',
+        'crm_list': crm_list,
+        'vertical_labels': vertical_labels,
+    }
+    return render(request, 'cap/affiliate_offer.html', context=context)
 
 
 @login_required
@@ -156,25 +164,6 @@ def ajax_setting_crm_edit(request):
 
 
 def ajax_setting_crm_delete(request):
-    crm_id = int(request.GET['crm_id'])
-
-    crm = CrmAccount.objects.get(id=crm_id)
-    crm.crm_name = request.GET['crm_name']
-    crm.crm_url = request.GET['crm_url']
-    crm.username = request.GET['crm_username']
-    if 'crm_password' in request.GET:
-        crm.password = request.GET['crm_password']
-    crm.api_username = request.GET['api_username']
-    if 'api_password' in request.GET:
-        crm.api_password = request.GET['api_password']
-    crm.sales_goal = int(request.GET['sales_goal'])
-    crm.paused = bool(int(request.GET['crm_paused']))
-    if 'rebill_length' in request.GET:
-        crm.rebill_length = int(request.GET['rebill_length'])
-    if 'test_cc' in request.GET:
-        crm.test_cc = request.GET['test_cc']
-    crm.save()
-
     return HttpResponse('OK')
 
 
@@ -318,7 +307,6 @@ def export_billing_report(request):
 
     response.write(xlsx_data)
     return response
-
 
 def view_update_campaigns(request):
     task_update_campaigns()

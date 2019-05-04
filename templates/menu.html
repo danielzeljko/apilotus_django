@@ -90,7 +90,7 @@
                         <li><a class="crm_tab_label{% if tab_name == "Offers" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/offer/">Offers</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'33' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Affiliate Settings" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/affiliate/">Affiliate Settings</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Affiliate Settings" %} active{% endif %} small" href="{% url 'lotus_dashboard:affiliates' %}">Affiliate Settings</a></li>
                     {% endif %}
                     </ul>
                 </li>
