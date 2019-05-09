@@ -179,6 +179,8 @@ class LabelCampaign(models.Model):
     campaign_format = models.IntegerField(choices=CAMPAIGN_FORMAT, null=True, blank=True)
     label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True, blank=True)
 
+    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
     class Meta:
         verbose_name = _('Label Campaign')
         verbose_name_plural = _('Label Campaigns')
@@ -312,3 +314,19 @@ class CapUpdateResult(ResultBase):
     class Meta:
         verbose_name = _('Cap Update Result')
         verbose_name_plural = _('Cap Update Results')
+
+
+class OfferBilling(models.Model):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE)
+    trial_desktop = models.ForeignKey(LabelCampaign, related_name='offer_desktop_trial', on_delete=models.CASCADE)
+    trial_mobile = models.ForeignKey(LabelCampaign, related_name='offer_mobile_trial', on_delete=models.CASCADE)
+    mc_desktop = models.ForeignKey(LabelCampaign, related_name='offer_desktop_mc', on_delete=models.CASCADE)
+    mc_mobile = models.ForeignKey(LabelCampaign, related_name='offer_mobile_mc', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = _('Offer Billing')
+        verbose_name_plural = _('Offers of Billing')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.offer.name + '(' + self.offer.crm.crm_name + ')'

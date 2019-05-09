@@ -308,6 +308,7 @@ def export_billing_report(request):
     response.write(xlsx_data)
     return response
 
+
 def view_update_campaigns(request):
     task_update_campaigns()
     return redirect('/' + settings.LOTUS_ADMIN_URL)

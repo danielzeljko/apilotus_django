@@ -28,9 +28,9 @@ class LabelGoalAdmin(admin.ModelAdmin):
 
 
 class LabelCampaignAdmin(admin.ModelAdmin):
-    list_display = ['crm', 'campaign_id', 'campaign_name', 'campaign_label']
-    list_filter = ['crm', 'campaign_id']
-    search_fields = ['campaign_id']
+    list_display = ['crm', 'campaign_id', 'campaign_name', 'campaign_label', 'updated_at']
+    list_filter = ['updated_at', 'campaign_id', 'crm']
+    search_fields = ['campaign_id', 'campaign_name']
     readonly_fields = ['crm', 'campaign_id', 'campaign_name']
 
 
@@ -54,6 +54,32 @@ class RebillAdmin(admin.ModelAdmin):
     raw_id_fields = ['rebills']
 
 
+class OfferBillingAdmin(admin.ModelAdmin):
+    list_display = ['crm', 'name', 'label', 'desktop_trial', 'mobile_trial', 'desktop_mc', 'mobile_mc']
+    raw_id_fields = ['trial_desktop', 'trial_mobile', 'mc_desktop', 'mc_mobile']
+
+    def crm(self, obj):
+        return obj.offer.crm.crm_name
+
+    def name(self, obj):
+        return obj.offer.name
+
+    def label(self, obj):
+        return obj.offer.label
+
+    def desktop_trial(self, obj):
+        return str(obj.trial_desktop.campaign_id) + ' - ' + obj.trial_desktop.crm.crm_name
+
+    def mobile_trial(self, obj):
+        return str(obj.trial_mobile.campaign_id) + ' - ' + obj.trial_mobile.crm.crm_name
+
+    def desktop_mc(self, obj):
+        return str(obj.mc_desktop.campaign_id) + ' - ' + obj.mc_desktop.crm.crm_name
+
+    def mobile_mc(self, obj):
+        return str(obj.mc_mobile.campaign_id) + ' - ' + obj.mc_mobile.crm.crm_name
+
+
 admin.site.register(DashboardColumn, DashboardColumnAdmin)
 admin.site.register(BlockedIP, BlockedIPAdmin)
 admin.site.register(CrmAccount, CrmAccountAdmin)
@@ -70,3 +96,5 @@ admin.site.register(AffiliateOffer, AffiliateOfferAdmin)
 
 admin.site.register(InitialResult)
 admin.site.register(Rebill, RebillAdmin)
+
+admin.site.register(OfferBilling, OfferBillingAdmin)

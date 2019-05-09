@@ -104,7 +104,7 @@
                         <li><a class="crm_tab_label{% if tab_name == "Billing" %} active{% endif %} small" href="{% url 'lotus_dashboard:billing_dashboard' %}">Billing</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'52' %}
-                        <li><a class="crm_tab_label{% if tab_name == "Billing Offers" %} active{% endif %} small" href="{% url 'lotus_dashboard:billing_offers' %}">Billing Offers</a></li>
+                        <li><a class="crm_tab_label{% if tab_name == "Billing Offers" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/billingoffer/">Billing Offers</a></li>
                     {% endif %}
                     {% if request.user|check_enable_menu:'53' %}
                         <li><a class="crm_tab_label{% if tab_name == "Billing Affiliates" %} active{% endif %} small" href="{% url 'lotus_dashboard:billing_affiliates' %}">Billing Affiliates</a></li>

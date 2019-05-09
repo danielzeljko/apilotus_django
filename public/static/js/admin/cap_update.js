@@ -327,45 +327,11 @@ jQuery(document).ready(function(t) {
             }
         })
     }
-    function get_affiliate_offers() {
-        show_edit_waiting(true);
-        $.ajax({
-            type: "GET",
-            url: "../daemon/ajax_admin/setting_affiliation_offer_list.php",
-            data: {
-                affiliate_id: selected_affiliate_id
-            },
-            success: function (data) {
-                show_edit_waiting(false);
-                if ("error" == data)
-                    show_edit_alert("Affiliate offers cannot be loaded.");
-                else if ("no_cookie" == data)
-                    window.location.href = "../../admin/login.php";
-                else {
-                    let selected_offers = jQuery.parseJSON(data);
-                    let all_options = '';
-                    let chosen_options = '';
-                    for (let i = 0; i < offers.length; i++) {
-                        if (selected_offers.includes(offers[i][0]))
-                            chosen_options += '<option value="' + offers[i][0] + '">' + offers[i][1] + '</option>';
-                        else
-                            all_options += '<option value="' + offers[i][0] + '">' + offers[i][1] + '</option>';
-                    }
-                    $(".all_options").html(all_options);
-                    $(".chosen_options").html(chosen_options);
-                }
-            },
-            failure: function () {
-                show_edit_waiting(false);
-                show_edit_alert("Affiliate offers cannot be loaded.");
-            }
-        });
-    }
     function edit_affiliate(offer_ids, offer_goals, s1_payouts, s2_ids, s2_payouts) {
         show_waiting("main", true);
         $.ajax({
             type: "GET",
-            url: "../daemon/ajax_admin/setting_affiliation_edit.php",
+            url: "/admin/ajax_edit_affiliate",
             data: {
                 affiliate_id: selected_affiliate_id,
                 name: $(".edit_affiliation_name").val(),
@@ -376,13 +342,9 @@ jQuery(document).ready(function(t) {
                 s2_ids: s2_ids,
                 s2_payouts: s2_payouts
             },
-            success: function (status) {
+            success: function (response) {
                 show_waiting("main", false);
-                if ("error" == status)
-                    show_alert("main", "Affiliate cannot be changed.");
-                else if ("no_cookie" == status)
-                    window.location.href = "../../admin/login.php";
-                else if ("success" == status) {
+                if ("OK" === response) {
                     get_affiliation_list();
                     get_cap_update_list();
                 }
@@ -390,6 +352,27 @@ jQuery(document).ready(function(t) {
             failure: function () {
                 show_waiting("main", false);
                 show_alert("main", "Affiliate cannot be changed.");
+            }
+        });
+    }
+    function delete_affiliate() {
+        show_waiting("main", true);
+        $.ajax({
+            type: "GET",
+            url: "/admin/ajax_delete_affiliate",
+            data: {
+                affiliate_id: selected_affiliate_id
+            },
+            success: function (response) {
+                show_waiting("main", false);
+                if ("OK" === response) {
+                    get_affiliation_list();
+                    get_cap_update_list();
+                }
+            },
+            failure: function () {
+                show_waiting("main", false);
+                show_alert("main", "Affiliate cannot be deleted.");
             }
         });
     }
@@ -401,8 +384,8 @@ jQuery(document).ready(function(t) {
             '<th>Step1 CPA</th>';
         for (let i = 0; i < affiliate_offers.length; i++) {
             let offer = affiliate_offers[i];
-            let offer_type = offers.filter(item => item[0] == offer[2])[0][5];
-            if (2 == offer_type) {
+            let offer_type = offers.filter(item => item['id'] === offer['offer_id'])[0]['type'];
+            if (2 === offer_type) {
                 html += '<th>Step2 CPA</th>';
                 break;
             }
@@ -412,13 +395,13 @@ jQuery(document).ready(function(t) {
 
         for (let i = 0; i < affiliate_offers.length; i++) {
             let offer = affiliate_offers[i];
-            let offer_type = offers.filter(item => item[0] == offer[2])[0];
+            let offer_full = offers.filter(item => item['id'] === offer['offer_id'])[0];
             html += '<tr>';
-            html += '<td>' + offer[3] + '</td>';
-            html += '<td><input type="text" id="editgoal_' + offer[2] + '" class="form-control input-sm edit_goals" value="' + offer[1] + '"></td>';
-            html += '<td><input type="text" id="s1payout_' + offer[2] + '" class="form-control input-sm s1_edit_payouts" value="' + (null == offer[7] || 0 == offer[7] ? "": offer[7]) + '" placeholder="' + offer_type[6] + '"/></td>';
-            if (2 == offer_type[5])
-                html += '<td><input type="text" id="s2payout_' + offer[2] + '" class="form-control input-sm s2_edit_payouts" value="' + (null == offer[8] || 0 == offer[8] ? "": offer[8]) + '" placeholder="' + offer_type[7] + '"/></td>';
+            html += '<td>' + offer['offer_name'] + '</td>';
+            html += '<td><input type="text" id="editgoal_' + offer['offer_id'] + '" class="form-control input-sm edit_goals" value="' + offer['affiliate_offer_goal'] + '"></td>';
+            html += '<td><input type="text" id="s1payout_' + offer['offer_id'] + '" class="form-control input-sm s1_edit_payouts" value="' + (null == offer['affiliate_offer_s1_payout'] || 0 === offer['affiliate_offer_s1_payout'] ? "": offer['affiliate_offer_s1_payout']) + '" placeholder="' + offer_full['s1_payout'] + '"/></td>';
+            if (2 === offer_full['type'])
+                html += '<td><input type="text" id="s2payout_' + offer['offer_id'] + '" class="form-control input-sm s2_edit_payouts" value="' + (null == offer['affiliate_offer_s2_payout'] || 0 === offer['affiliate_offer_s2_payout'] ? "": offer['affiliate_offer_s2_payout']) + '" placeholder="' + offer_full['s2_payout'] + '"/></td>';
             html += '</tr>';
         }
         html += '</tbody></table>';
@@ -436,30 +419,34 @@ jQuery(document).ready(function(t) {
     }
 
     $(document).on("click", ".btn_affiliation_edit", function () {
-        let all_options = "";
+        selected_affiliate_id = parseInt($(this).prop("id").substring(6));
+        let affiliate = affiliations.filter(item => item['affiliate_id'] === selected_affiliate_id)[0];
+
+        let offer_ids = affiliate['sub_result'].map(item => item['offer_id']);
+        let all_options = '';
+        let chosen_options = '';
         for (let i = 0; i < offers.length; i++) {
-            all_options += '<option value="' + offers[i][0] + '">' + offers[i][1] + '</option>';
+            if (offer_ids.includes(offers[i]['id']))
+                chosen_options += '<option value=' + offers[i]['id'] + '>' + offers[i]['name'] + '</option>';
+            else
+                all_options += '<option value=' + offers[i]['id'] + '>' + offers[i]['name'] + '</option>';
         }
         $(".all_options").html(all_options);
-        $(".chosen_options").html("");
-        $(".affiliation_offer_caps").html("");
+        $(".chosen_options").html(chosen_options);
 
-        selected_affiliate_id = $(this).prop("id").substring(6);
-        let affiliate = affiliations.filter(item => item[0][0] === selected_affiliate_id)[0];
-        $(".edit_affiliation_name").val(affiliate[0][1]);
-        $(".edit_affiliation_afid").val(affiliate[0][2]);
+        $(".edit_affiliation_name").val(affiliate['affiliate_name']);
+        $(".edit_affiliation_afid").val(affiliate['affiliate_afid']);
+        $("#edit_special_code").val(affiliate['affiliate_code']);
 
-        $(".affiliation_offer_caps").html(make_html(affiliate[1]));
-
-        get_affiliate_offers();
+        $(".affiliation_offer_caps").html(make_html(affiliate['sub_result']));
     });
     $(".modal_btn_affiliation_edit").click(function () {
-        if ("" == $(".edit_affiliation_name").val()) {
+        if ("" === $(".edit_affiliation_name").val()) {
             show_edit_alert("edit", "Please input Affiliate Name.");
             $(".edit_affiliation_name").focus();
             return;
         }
-        if ("" == $(".edit_affiliation_afid").val()) {
+        if ("" === $(".edit_affiliation_afid").val()) {
             show_edit_alert("edit", "Please input AFIDs of Affiliate.");
             $(".edit_affiliation_afid").focus();
             return;
@@ -490,6 +477,11 @@ jQuery(document).ready(function(t) {
 
         edit_affiliate(ids.join(','), goals.join(','), s1_payouts.join(','), s2_ids.join(','), s2_payouts.join(','));
     });
+    $(".modal_btn_affiliation_delete").click(function () {
+        $("#affiliation_delete_modal").modal("toggle");
+        $("#affiliation_edit_modal").modal("toggle");
+        delete_affiliate();
+    });
 
     function refresh_table() {
         let chosen_options = $('.chosen_options option');
@@ -504,14 +496,14 @@ jQuery(document).ready(function(t) {
             '<th>Offer Cap</th>' +
             '<th>Step1 CPA</th>';
         for (let i = 0; i < chosen_options.length; i++) {
-            let offer = offers.filter(item => item[0] === chosen_options[i].value)[0];
-            if (2 == offer[5]) {
+            let offer = offers.filter(item => item['id'] === chosen_options[i].value)[0];
+            if (2 === offer['type']) {
                 html += '<th>Step2 CPA</th>';
                 break;
             }
         }
         html += '</tr>';
-        $("#id_" + add + "affiliation_offer_caps_header").html(html);
+        $("#id_affiliation_offer_caps_header").html(html);
     }
     $('.go_in').click(function() {
         let selected_options = $('.all_options option:selected');
@@ -520,14 +512,14 @@ jQuery(document).ready(function(t) {
         let body = document.getElementById('id_affiliation_offer_caps_body');
 
         for (let i = 0; i < selected_options.length; i++) {
-            let offer = offers.filter(item => item[0] === selected_options[i].value)[0];
+            let offer = offers.filter(item => item['id'] == selected_options[i].value)[0];
             let new_offer = document.createElement('tr');
             let html = '<tr>';
-            html += '<td>' + offer[1] + '</td>';
-            html += '<td><input type="text" id="editgoal_' + offer[0] + '" class="form-control input-sm edit_goals" value=""></td>';
-            html += '<td><input type="text" id="s1payout_' + offer[0] + '" class="form-control input-sm s1_edit_payouts" value="" placeholder="' + offer[6] + '"/></td>';
-            if (2 == offer[5]) {
-                html += '<td><input type="text" id="s2payout_' + offer[0] + '" class="form-control input-sm s2_edit_payouts" value="" placeholder="' + offer[7] + '"/></td>';
+            html += '<td>' + offer['name'] + '</td>';
+            html += '<td><input type="text" id="editgoal_' + offer['id'] + '" class="form-control input-sm edit_goals" value=""></td>';
+            html += '<td><input type="text" id="s1payout_' + offer['id'] + '" class="form-control input-sm s1_edit_payouts" value="" placeholder="' + offer['s1_payout'] + '"/></td>';
+            if (2 === offer['type']) {
+                html += '<td><input type="text" id="s2payout_' + offer['id'] + '" class="form-control input-sm s2_edit_payouts" value="" placeholder="' + offer['s2_payout'] + '"/></td>';
             }
             html += '</tr>';
             new_offer.innerHTML = html;
