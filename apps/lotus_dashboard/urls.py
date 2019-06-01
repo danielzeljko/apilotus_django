@@ -11,7 +11,7 @@ router.register(r'dashboard_column', DashboardColumnViewSet)
 router.register(r'cap_update_result', CapUpdateResultViewSet)
 router.register(r'offer', OfferViewSet)
 router.register(r'affiliate', AffiliateViewSet)
-
+router.register(r'billing_affiliate', BillingAffiliateViewSet)
 
 urlpatterns = [
     url('^api/', include(router.urls)),
@@ -23,9 +23,7 @@ urlpatterns = [
     url(r'^cap_update/$', views.view_cap_update, name='cap_update'),
     url(r'^affiliates/$', views.view_affiliates, name='affiliates'),
     url(r'^billing/$', views.view_billing_dashboard, name='billing_dashboard'),
-    url(r'^dashboard/$', views.dashboard, name='billing_offers'),
-    url(r'^dashboard/$', views.dashboard, name='billing_affiliates'),
-    url(r'^dashboard/$', views.dashboard, name='billing_reports'),
+    url(r'^billing_report/$', views.view_billing_report, name='billing_reports'),
     url(r'^dashboard/$', views.dashboard, name='setting_payment'),
     url(r'^dashboard/$', views.dashboard, name='logout'),
 
@@ -54,6 +52,7 @@ urlpatterns = [
     # ajax requests in viewsets
     url(r'^ajax_cap_update_list/$', view=CapUpdateList.as_view(), name='url_cap_update_list'),
     url(r'^ajax_billing_list/$', view=BillingList.as_view(), name='url_billing_list'),
+    url(r'^ajax_billing_result_list/$', view=BillingResultList.as_view(), name='url_billing_result_list'),
     url(r'^ajax_affiliation_list/$', view=AffiliationList.as_view(), name='url_affiliation_list'),
 
     # tasks
@@ -62,4 +61,5 @@ urlpatterns = [
     url(r'^get_initial_reports/$', views.view_get_initial_reports),
     url(r'^get_rebill_reports/$', views.view_get_rebill_reports),
     url(r'^get_cap_update_result/$', views.view_get_cap_update_result),
+    url(r'^get_billing_result/$', views.view_billing_result),
 ]

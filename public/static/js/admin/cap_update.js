@@ -113,7 +113,6 @@ jQuery(document).ready(function(t) {
                             let affiliate_goal_id = -1;
                             for (let i = 0; i < cap_update_list.length; i++) {
                                 let affiliate_goal = cap_update_list[i];
-                                // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
                                 if (affiliate_goal_id !== affiliate_goal['affiliate_id']) {
                                     if (-1 !== affiliate_goal_id)
                                         html += '</div></div></div>';

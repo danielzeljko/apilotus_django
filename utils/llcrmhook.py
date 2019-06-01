@@ -364,5 +364,35 @@ class LLCRMHook(object):
 
         return results
 
+    def get_sales_report_for_billing(self, from_date, to_date, campaign_id):
+        headers = {
+            'cookie': 'p_cookie=1; o_cookie=1; c_cookie=1; b_cookie=1; ' + self.token,
+        }
+
+        url = self.prospect_url(from_date, to_date) + '&f=' + str(campaign_id) + '&aff=1'
+
+        response = requests.get(url, headers=headers)
+        if response.text.__contains__('No results exist at this time.'):
+            return []
+        data = fromstring(response.text)
+
+        prospects = data.xpath('//table[@class="list "]/tr')
+
+        results = []
+        for prospect in prospects[1:-1]:
+            data = {
+                'campaign_id': campaign_id,
+                'id': prospect.xpath('.//td[1]/text()')[0],
+                'prospects': int(self.parse_value(prospect.xpath('.//td[2]/text()')[0])),
+                'initial_customers': int(self.parse_value(prospect.xpath('.//td[3]/text()')[0])),
+                'conversion_rate': float(self.parse_value(prospect.xpath('.//td[4]/text()')[0])),
+                'gross_revenue': float(self.parse_value(prospect.xpath('.//td[5]/text()')[0])),
+                'average_revenue': float(self.parse_value(prospect.xpath('.//td[6]/text()')[0])),
+            }
+
+            results.append(data)
+
+        return results
+
     def parse_value(self, value):
         return value.replace('%', '').replace('$', '').replace(',', '')

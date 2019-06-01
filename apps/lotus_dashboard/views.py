@@ -8,7 +8,7 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from lotus_dashboard.models import *
 from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns, task_get_initial_reports, \
-    task_get_rebill_reports, task_get_sales_report
+    task_get_rebill_reports, task_get_sales_report, task_get_billing_report
 
 from apilotus import settings
 
@@ -80,6 +80,17 @@ def view_billing_dashboard(request):
         'crm_list': crm_list,
     }
     return render(request, 'billing/billing.html', context=context)
+
+
+@login_required
+def view_billing_report(request):
+    crm_list = CrmAccount.objects.active_crm_accounts()
+
+    context = {
+        'tab_name': 'Billing Reports',
+        'crm_list': crm_list,
+    }
+    return render(request, 'billing/billing_report.html', context=context)
 
 
 # ajax functions
@@ -337,3 +348,8 @@ def view_get_rebill_reports(request):
 def view_get_cap_update_result(request):
     task_get_sales_report()
     return redirect('lotus_dashboard:cap_update')
+
+
+def view_billing_result(request):
+    task_get_billing_report()
+    return redirect('lotus_dashboard:billing_dashboard')

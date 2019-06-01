@@ -40,6 +40,11 @@ class AffiliateViewSet(ModelViewSet):
     serializer_class = AffiliateSerializer
 
 
+class BillingAffiliateViewSet(ModelViewSet):
+    queryset = BillingAffiliate.objects.all()
+    serializer_class = BillingAffiliateSerializer
+
+
 def dict_fetchall(cursor):
     # Returns all rows from a cursor as a dict
     desc = cursor.description
@@ -129,6 +134,32 @@ class BillingList(APIView):
         for result in results:
             result['step1'] = [a.campaign_id for a in Offer.objects.get(id=result['offer_id']).step1.all()]
 
+        return JsonResponse(results, safe=False)
+
+
+class BillingResultList(APIView):
+    """
+        List all billing results.
+    """
+
+    def get(self, request, format=None):
+        from_date = request.query_params.get('from_date', '')
+        to_date = request.query_params.get('to_date', '')
+        cursor = connection.cursor()
+        cursor.execute('''
+            SELECT
+                br.trial_result,
+                br.mc_result,
+                bo.offer_id
+            FROM
+                lotus_dashboard_billingresult br
+                LEFT JOIN lotus_dashboard_offerbilling bo ON br.billing_id = bo.id
+            WHERE
+                br.from_date = '{}'
+                AND br.to_date = '{}'
+        '''.format('04/29/2019', '05/05/2019'))
+
+        results = dict_fetchall(cursor)
         return JsonResponse(results, safe=False)
 
 

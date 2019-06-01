@@ -17,21 +17,10 @@ jQuery(document).ready(function(t) {
         d ? t(".billing_waiting").html(loading_gif) : t(".billing_waiting").html("");
     }
 
-    function show_edit_waiting(status) {
-        status ? $(".affiliate_edit_waiting").html(loading_gif) : $(".affiliate_edit_waiting").html("");
-    }
-
     function format_date(year, month, date) {
         if (month < 10) month = "0" + month;
         if (date < 10) date = "0" + date;
         return month + "/" + date + "/" + year;
-    }
-
-    function format_time(hour, minute, second) {
-        if (hour < 10) hour = "0" + hour;
-        if (minute < 10) minute = "0" + minute;
-        if (second < 10) second = "0" + second;
-        return hour + ":" + minute + ":" + second;
     }
 
     function set_dates() {
@@ -110,7 +99,6 @@ jQuery(document).ready(function(t) {
                             let affiliate_id = -1;
                             for (let i = 0; i < billing_list.length; i++) {
                                 let billing = billing_list[i];
-                                // ["6", "2", "3", "200", "Full Zoom Media", "12,58", "Vital X", "Falcor CRM", "2500"]
                                 if (affiliate_id !== billing['affiliate_id']) {
                                     if (-1 !== affiliate_id)
                                         html += '</div></div></div>';

@@ -136,7 +136,7 @@ jQuery(document).ready(function(t) {
                                     let timestamp = sales[i]['updated_at'];
 
                                     let take_rate = (0 === step1) ? "0" : (100 * step2 / step1).toFixed(2);
-                                    let tablet_p = (tablet + step2_nonpp === 0) ? "0" : (100 * tablet / (tablet + step2_nonpp)).toFixed(2);
+                                    let tablet_p = (tablet + step1_nonpp === 0) ? "0" : (100 * tablet / (tablet + step1_nonpp)).toFixed(2);
                                     let order_p = (0 === order_count) ? "0" : (order_page / order_count).toFixed(2);
                                     let decline_p = (0 === gross_order) ? "0" : (decline / gross_order).toFixed(2);
                                     let s1pp = (0 === prepaid) ? "0" : (prepaid_step1 * 100 / prepaid).toFixed(2);

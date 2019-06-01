@@ -24,3 +24,9 @@ class AffiliateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Affiliate
         fields = ('id', 'name', 'afid', 'code', 'bot')
+
+
+class BillingAffiliateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BillingAffiliate
+        fields = ('id', 'name', 'afid')

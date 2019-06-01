@@ -80,11 +80,13 @@ class OfferBillingAdmin(admin.ModelAdmin):
         return str(obj.mc_mobile.campaign_id) + ' - ' + obj.mc_mobile.crm.crm_name
 
 
+class BillingAffiliateAdmin(admin.ModelAdmin):
+    list_display = ['name', 'afid']
+
+
 admin.site.register(DashboardColumn, DashboardColumnAdmin)
 admin.site.register(BlockedIP, BlockedIPAdmin)
 admin.site.register(CrmAccount, CrmAccountAdmin)
-admin.site.register(CrmToken)
-admin.site.register(CrmResult)
 admin.site.register(Label, LabelAdmin)
 admin.site.register(LabelGoal, LabelGoalAdmin)
 admin.site.register(LabelCampaign, LabelCampaignAdmin)
@@ -94,7 +96,7 @@ admin.site.register(Offer, OfferAdmin)
 admin.site.register(Affiliate, AffiliateAdmin)
 admin.site.register(AffiliateOffer, AffiliateOfferAdmin)
 
-admin.site.register(InitialResult)
 admin.site.register(Rebill, RebillAdmin)
 
 admin.site.register(OfferBilling, OfferBillingAdmin)
+admin.site.register(BillingAffiliate, BillingAffiliateAdmin)

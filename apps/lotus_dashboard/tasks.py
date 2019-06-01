@@ -70,7 +70,7 @@ def save_crm_results(crm_results, from_date, to_date, crm_id):
 
 
 @periodic_task(
-    run_every=(crontab(minute='*/19')),
+    run_every=(crontab(minute='*/29')),
     name="apps.lotus_dashboard.tasks.task_get_dashboard_sales",
     ignore_result=True,
 )
@@ -196,7 +196,7 @@ def save_cap_update_results(results, from_date, to_date, crm_id):
 
 
 @periodic_task(
-    run_every=(crontab(minute='*/59')),
+    run_every=(crontab(minute='*/60')),
     name="apps.lotus_dashboard.tasks.task_get_sales_report",
     ignore_result=True,
 )
@@ -234,3 +234,42 @@ def task_get_sales_report():
                 sub_result = llcrm_hook.get_sales_report_for_cap_update(yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'), '', '1', campaign_result['id'], '0')
                 results.append([int(campaign_result['id']), sub_result[:-1]])
             save_cap_update_results(results, yesterday, yesterday, crm.id)
+
+
+def save_billing_results(billing, trial_result, mc_result, from_date, to_date):
+    try:
+        billing_result = BillingResult.objects.get(from_date=from_date, to_date=to_date, billing=billing)
+    except BillingResult.DoesNotExist:
+        billing_result = BillingResult()
+        billing_result.from_date = from_date
+        billing_result.to_date = to_date
+        billing_result.billing = billing
+    billing_result.trial_result = str(trial_result)
+    billing_result.mc_result = str(mc_result)
+    billing_result.save()
+
+
+@periodic_task(
+    run_every=(crontab(minute='*/20')),
+    name="apps.lotus_dashboard.tasks.task_get_billing_report",
+    ignore_result=True,
+)
+def task_get_billing_report():
+    today = timezone.datetime.now().date()
+    week_start = today + timezone.timedelta(-today.weekday())
+    week_start = timezone.datetime.strptime('04/29/2019', '%m/%d/%Y')
+    week_end = week_start + timezone.timedelta(6)
+    billings = OfferBilling.objects.all()
+
+    for billing in billings:
+        print(billing)
+        crm = billing.offer.crm
+        llcrm_hook = LLCRMHook(crm.id)
+        trial_desktop = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.trial_desktop.campaign_id)
+        trial_mobile = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.trial_mobile.campaign_id)
+        mc_desktop = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.mc_desktop.campaign_id)
+        mc_mobile = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.mc_mobile.campaign_id)
+
+        trial_result = trial_desktop + trial_mobile
+        mc_result = mc_desktop + mc_mobile
+        save_billing_results(billing, trial_result, mc_result, week_start, week_end)

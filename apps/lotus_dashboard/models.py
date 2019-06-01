@@ -324,9 +324,40 @@ class OfferBilling(models.Model):
     mc_mobile = models.ForeignKey(LabelCampaign, related_name='offer_mobile_mc', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = _('Offer Billing')
+        verbose_name = _('Billing Offer')
         verbose_name_plural = _('Offers of Billing')
         ordering = ['pk']
 
     def __str__(self):
         return self.offer.name + '(' + self.offer.crm.crm_name + ')'
+
+
+class BillingAffiliate(models.Model):
+    name = models.CharField(max_length=128)
+    afid = models.CharField(max_length=128)
+
+    class Meta:
+        verbose_name = _('Billing Affiliate')
+        verbose_name_plural = _('Affiliates of Billing')
+        ordering = ['pk']
+
+    def __str__(self):
+        return '%s - %s' % (self.name, self.afid)
+
+
+class BillingResult(models.Model):
+    from_date = models.DateField()
+    to_date = models.DateField()
+    billing = models.ForeignKey(OfferBilling, on_delete=models.CASCADE)
+    trial_result = models.TextField()
+    mc_result = models.TextField()
+
+    updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
+    class Meta:
+        ordering = ['pk']
+        verbose_name = _('Billing Result')
+        verbose_name_plural = _('Billing Results')
+
+    def __str__(self):
+        return str(self.from_date) + '~' + str(self.to_date) + ', ' + self.billing.offer.name
