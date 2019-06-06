@@ -157,7 +157,7 @@ class BillingResultList(APIView):
             WHERE
                 br.from_date = '{}'
                 AND br.to_date = '{}'
-        '''.format('04/29/2019', '05/05/2019'))
+        '''.format(from_date, to_date))
 
         results = dict_fetchall(cursor)
         return JsonResponse(results, safe=False)

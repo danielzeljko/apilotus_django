@@ -19,15 +19,16 @@ jQuery(document).ready(function(t) {
     function set_dates() {
         t("#from_date").prop("disabled", true);
         t("#to_date").prop("disabled", true);
-        var date = new Date;
-        var cur_date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-        var formatted_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
+        let date = new Date;
+        let cur_date = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
         if ("date_thisweek" == date_type) {
-            var r = cur_date.getDate() + 1;
+            let r = cur_date.getDate() + 1;
             0 == cur_date.getDay() ? r -= 7 : r -= cur_date.getDay();
             cur_date.setDate(r);
             from_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
-            to_date = formatted_date;
+            r = cur_date.getDate() + 6;
+            cur_date.setDate(r);
+            to_date = format_date(cur_date.getFullYear(), cur_date.getMonth() + 1, cur_date.getDate());
         }
         else if ("date_lastweek" == date_type) {
             r = cur_date.getDate() + 1 - 7;
@@ -131,9 +132,9 @@ jQuery(document).ready(function(t) {
 
                                 html += '<h4 style="color: #6772e5">Sales Progress</h4>';
                                 html += '<div class="row c_cnt_header">';
-                                html += '<div style="color: #6772e5; text-align: center;" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">OFFER</div>';
+                                html += '<div style="color: #6772e5; text-align: center;" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">OFFER</div>';
                                 html += '<div style="color: #6772e5" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">SALES</div>';
-                                html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">CPA</div>';
+                                html += '<div style="color: #6772e5" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">CPA</div>';
                                 html += '<div style="color: #6772e5" class="col-lg-3 col-md-3 col-sm-3 col-xs-3">TOTAL</div>';
                                 html += '</div>';
                                 html += '<div class="c_cnt_list">';
@@ -177,9 +178,9 @@ jQuery(document).ready(function(t) {
                                     if (affiliate['name'] === "MaxBounty") {
                                         if (trial_count > 0 || mc_count > 0) {
                                             html += '<div class="row">';
-                                            html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + offer['name'] + '</div>';
+                                            html += '<div style="text-align: center" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">' + offer['name'] + '</div>';
                                             html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">' + (trial_count + mc_count) + '</div>';
-                                            html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + trial_cpa + '.00</div>';
+                                            html += '<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">$ ' + trial_cpa + '.00</div>';
                                             html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + (trial_count * trial_cpa + mc_count * mc_cpa).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</div>';
                                             html += '</div>';
                                         }
@@ -187,17 +188,17 @@ jQuery(document).ready(function(t) {
                                     else {
                                         if (trial_count > 0) {
                                             html += '<div class="row">';
-                                            html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + offer['name'] + ' Trial</div>';
+                                            html += '<div style="text-align: center" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">' + offer['name'] + ' Trial</div>';
                                             html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">' + trial_count + '</div>';
-                                            html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + trial_cpa + '.00</div>';
+                                            html += '<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">$ ' + trial_cpa + '.00</div>';
                                             html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + (trial_count * trial_cpa).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</div>';
                                             html += '</div>';
                                         }
                                         if (mc_count > 0) {
                                             html += '<div class="row">';
-                                            html += '<div style="text-align: center" class="col-lg-4 col-md-4 col-sm-4 col-xs-4">' + offer['name'] + ' MC</div>';
+                                            html += '<div style="text-align: center" class="col-lg-5 col-md-5 col-sm-5 col-xs-5">' + offer['name'] + ' MC</div>';
                                             html += '<div style="text-align: center" class="col-lg-2 col-md-2 col-sm-2 col-xs-2">' + mc_count + '</div>';
-                                            html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + mc_cpa + '.00</div>';
+                                            html += '<div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">$ ' + mc_cpa + '.00</div>';
                                             html += '<div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">$ ' + (mc_count * mc_cpa).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + '</div>';
                                             html += '</div>';
                                         }
@@ -226,15 +227,11 @@ jQuery(document).ready(function(t) {
     }
 
     async function get_export_result() {
-        let affiliate_ids_have_offer = billing_results.map(function(item) {
-            return item['affiliate_id'];
-        });
-        affiliate_ids_have_offer = affiliate_ids_have_offer.filter((v, i, a) => a.indexOf(v) === i);
-
-        for (let i = 0; i < affiliate_ids_have_offer.length; i++) {
-            window.location.href = "/admin/export_billing_report/?affiliate_id=" + affiliate_ids_have_offer[i] + "&from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
+        for (let i = 0; i < affiliations.length; i++) {
+            window.location.href = "/admin/export_billing_report/?affiliate_id=" + affiliations[i]['id'] + "&from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
             await sleep(2000);
         }
+        window.location.href = "/admin/export_billing_reports/?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
     }
 
     t(".input-daterange").datepicker({});

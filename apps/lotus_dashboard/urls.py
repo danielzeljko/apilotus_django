@@ -42,6 +42,7 @@ urlpatterns = [
     url(r'^ajax_rebill_list/$', views.ajax_rebill_list, name='url_rebill_list'),
 
     url(r'^export_billing_report/$', view=views.export_billing_report),
+    url(r'^export_billing_reports/$', view=views.export_billing_reports),
 
     # ajax requests in ajax_apis
     url(r'^ajax_add_affiliate/$', ajax_apis.ajax_add_affiliate),

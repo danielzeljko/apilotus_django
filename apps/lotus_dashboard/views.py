@@ -234,7 +234,7 @@ def export_billing_report(request):
     from_date = request.GET['from_date']
     to_date = request.GET['to_date']
 
-    affiliate = Affiliate.objects.get(id=affiliate_id)
+    affiliate = BillingAffiliate.objects.get(id=affiliate_id)
 
     output_file_name = 'billing_%s_%s-%s' % (affiliate.name, from_date.replace('/', '.'), to_date.replace('/', '.'))
     response = HttpResponse(content_type='application/vnd.ms-excel')
@@ -270,48 +270,227 @@ def export_billing_report(request):
     from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
     to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
 
-    affiliate_offers = AffiliateOffer.objects.filter(affiliate=affiliate)
+    billing_results = BillingResult.objects.filter(from_date=from_date, to_date=to_date)
+
+    total = 0
     row = 2
-    total_tti = 0
-    for affiliate_offer in affiliate_offers:
-        offer = affiliate_offer.offer
-        cell_format = workbook.add_format({'bold': True, 'align': 'center'})
-        worksheet.write('D' + str(row), offer.name, cell_format)
 
-        cpa = affiliate_offer.s1_payout if affiliate_offer.s1_payout else offer.s1_payout
-        worksheet.write('F' + str(row), "$ {:,.2f}".format(cpa))
+    afids = affiliate.afid.split(', ')
+    for result in billing_results:
+        trial_results = eval(result.trial_result)
+        mc_results = eval(result.mc_result)
+        trial_count = 0
+        mc_count = 0
+        trial_cpa = 0
+        mc_cpa = 0
+        for afid in afids:
+            afid_id = afid.split('(')[0]
+            cpa = afid.split('(')[1][:-1]
 
-        try:
-            cap_update_result = CapUpdateResult.objects.get(crm=offer.crm, from_date=from_date, to_date=to_date)
-            afids = affiliate.afid.split(',')
-            campaign_ids = affiliate_offer.offer.step1.all()
-            cap_result = eval(cap_update_result.result)
-            specials = []
+            for trial_result in trial_results:
+                if afid_id == trial_result['id']:
+                    trial_cpa = int(cpa.split(',')[0])
+                    trial_count += int(trial_result['initial_customers'])
+                    total += trial_cpa * int(trial_result['initial_customers'])
 
-            sales = 0
-            for prospect in cap_result:
-                for campaign_id in campaign_ids:
-                    if campaign_id.campaign_id == prospect[0]:
-                        for prospect_data in prospect[1]:
-                            for afid in afids:
-                                if prospect_data['id'] == afid.split('(')[0]:
-                                    if len(afid.split('(')) == 2:
-                                        pass
-                                    else:
-                                        sales += prospect_data['initial_customers']
+            for mc_result in mc_results:
+                if afid_id == mc_result['id']:
+                    mc_cpa = int(cpa.split(',')[1] if len(cpa.split(',')) > 1 else cpa)
+                    mc_count += int(mc_result['initial_customers'])
+                    total += mc_cpa * int(mc_result['initial_customers'])
 
-            cell_format = workbook.add_format({'align': 'center'})
-            worksheet.write('E' + str(row), sales if sales else None, cell_format)
+        offer = result.billing.offer
+        if affiliate.name == 'MaxBounty':
+            if trial_count > 0 or mc_count > 0:
+                cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                worksheet.write('D' + str(row), offer.name, cell_format)
+                worksheet.write('F' + str(row), "$ {:,.2f}".format(trial_cpa))
+                cell_format = workbook.add_format({'align': 'center'})
+                worksheet.write('E' + str(row), str(trial_count + mc_count), cell_format)
+                tti = (trial_count + mc_count) * trial_cpa
+                worksheet.write('G' + str(row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                row += 1
+        else:
+            if trial_count > 0:
+                cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                worksheet.write('D' + str(row), offer.name + ' Trial', cell_format)
+                worksheet.write('F' + str(row), "$ {:,.2f}".format(trial_cpa))
+                cell_format = workbook.add_format({'align': 'center'})
+                worksheet.write('E' + str(row), str(trial_count), cell_format)
+                tti = trial_count * trial_cpa
+                worksheet.write('G' + str(row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                row += 1
+            if mc_count > 0:
+                cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                worksheet.write('D' + str(row), offer.name + ' MC', cell_format)
+                worksheet.write('F' + str(row), "$ {:,.2f}".format(mc_cpa))
+                cell_format = workbook.add_format({'align': 'center'})
+                worksheet.write('E' + str(row), str(mc_count), cell_format)
+                tti = mc_count * mc_cpa
+                worksheet.write('G' + str(row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                row += 1
 
-            tti = sales * cpa
-            worksheet.write('G' + str(row), "$ {:,.2f}".format(tti) if tti else "$  -")
+    worksheet.write('B4', "$ {:,.2f}".format(total))
 
-            total_tti += tti
-        except CapUpdateResult.DoesNotExist:
-            pass
+    workbook.close()
+    xlsx_data = output.getvalue()
+
+    response.write(xlsx_data)
+    return response
+
+
+def export_billing_reports(request):
+    from_date = request.GET['from_date']
+    to_date = request.GET['to_date']
+
+    output_file_name = 'billing_Total_%s-%s' % (from_date.replace('/', '.'), to_date.replace('/', '.'))
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename=' + output_file_name + '.xlsx'
+
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet(from_date.replace('/', '.') + '-' + to_date.replace('/', '.'))
+
+    worksheet.set_column(0, 0, 25)
+    worksheet.set_column(1, 1, 25)
+    worksheet.set_column(2, 2, 10)
+    worksheet.set_column(3, 3, 30)
+    worksheet.set_column(6, 6, 14)
+
+    cell_format = workbook.add_format({'bold': True, 'font_color': '#5B9BD5', 'align': 'center'})
+    worksheet.write('A1', 'Week of', cell_format)
+    cell_format = workbook.add_format({'align': 'center'})
+    worksheet.write('A2', from_date + ' - ' + to_date, cell_format)
+    cell_format = workbook.add_format({'bold': True, 'font_color': '#006100', 'bg_color': '#C6EFCE', 'align': 'right'})
+    worksheet.write('A3', 'Affiliate', cell_format)
+    worksheet.write('B3', 'AFF ID', cell_format)
+    cell_format = workbook.add_format({'bold': True, 'font_color': '#006100', 'bg_color': '#C6EFCE', 'align': 'center'})
+    worksheet.write('C3', 'INV #', cell_format)
+    worksheet.write('D3', 'Total Payment', cell_format)
+
+    affiliates = BillingAffiliate.objects.all()
+    billing_results = BillingResult.objects.filter(
+        from_date=timezone.datetime.strptime(from_date, "%m/%d/%Y").date(),
+        to_date=timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+    )
+
+    row = 4
+    total_of_totals = 0
+    for affiliate in affiliates:
+        total = 0
+        afids = affiliate.afid.split(', ')
+        for result in billing_results:
+            trial_results = eval(result.trial_result)
+            mc_results = eval(result.mc_result)
+            trial_count = 0
+            mc_count = 0
+            for afid in afids:
+                afid_id = afid.split('(')[0]
+                cpa = afid.split('(')[1][:-1]
+
+                for trial_result in trial_results:
+                    if afid_id == trial_result['id']:
+                        trial_cpa = int(cpa.split(',')[0])
+                        trial_count += int(trial_result['initial_customers'])
+                        total += trial_cpa * int(trial_result['initial_customers'])
+
+                for mc_result in mc_results:
+                    if afid_id == mc_result['id']:
+                        mc_cpa = int(cpa.split(',')[1] if len(cpa.split(',')) > 1 else cpa)
+                        mc_count += int(mc_result['initial_customers'])
+                        total += mc_cpa * int(mc_result['initial_customers'])
+
+        total_of_totals += total
+        cell_format = workbook.add_format({'bold': True, 'align': 'right'})
+        worksheet.write('A' + str(row), affiliate.name, cell_format)
+        cell_format = workbook.add_format({'align': 'right'})
+        worksheet.write('B' + str(row), affiliate.afid, cell_format)
+        worksheet.write('D' + str(row), "$ {:,.2f}".format(total) if total else "$  -")
+
         row += 1
 
-    worksheet.write('B4', "$ {:,.2f}".format(total_tti))
+    cell_format = workbook.add_format({'bold': True, 'align': 'right'})
+    worksheet.write('C' + str(row), 'TOTAL', cell_format)
+    cell_format = workbook.add_format({'bold': True})
+    worksheet.write('D' + str(row), "$ {:,.2f}".format(total_of_totals) if total_of_totals else "$  -", cell_format)
+
+    row += 3
+    for affiliate in affiliates:
+        cell_format = workbook.add_format({'bold': True, 'font_color': 'white', 'bg_color': '#5B9BD5'})
+        worksheet.write('A' + str(row), 'Affiliate', cell_format)
+        worksheet.write('A' + str(row + 1), 'Affiliate ID', cell_format)
+        worksheet.write('A' + str(row + 2), 'Week Of', cell_format)
+        worksheet.write('A' + str(row + 3), 'Total To Invoice', cell_format)
+
+        cell_format = workbook.add_format({'align': 'left'})
+        worksheet.write('B' + str(row), affiliate.name, cell_format)
+        worksheet.write('B' + str(row + 1), affiliate.afid, cell_format)
+        worksheet.write('B' + str(row + 2), from_date + '-' + to_date, cell_format)
+
+        cell_format = workbook.add_format({'bold': True, 'font_color': '#006100', 'bg_color': '#C6EFCE', 'align': 'center'})
+        worksheet.write('D' + str(row), 'Offer', cell_format)
+        worksheet.write('E' + str(row), 'Sales', cell_format)
+        worksheet.write('F' + str(row), 'CPA', cell_format)
+        worksheet.write('G' + str(row), 'Total', cell_format)
+
+        offer_row = row + 1
+        total = 0
+        afids = affiliate.afid.split(', ')
+        for result in billing_results:
+            trial_results = eval(result.trial_result)
+            mc_results = eval(result.mc_result)
+            trial_count = 0
+            mc_count = 0
+            trial_cpa = 0
+            mc_cpa = 0
+            for afid in afids:
+                afid_id = afid.split('(')[0]
+                cpa = afid.split('(')[1][:-1]
+
+                for trial_result in trial_results:
+                    if afid_id == trial_result['id']:
+                        trial_cpa = int(cpa.split(',')[0])
+                        trial_count += int(trial_result['initial_customers'])
+                        total += trial_cpa * int(trial_result['initial_customers'])
+
+                for mc_result in mc_results:
+                    if afid_id == mc_result['id']:
+                        mc_cpa = int(cpa.split(',')[1] if len(cpa.split(',')) > 1 else cpa)
+                        mc_count += int(mc_result['initial_customers'])
+                        total += mc_cpa * int(mc_result['initial_customers'])
+            offer = result.billing.offer
+            if affiliate.name == 'MaxBounty':
+                if trial_count > 0 or mc_count > 0:
+                    cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                    worksheet.write('D' + str(offer_row), offer.name, cell_format)
+                    worksheet.write('F' + str(offer_row), "$ {:,.2f}".format(trial_cpa))
+                    cell_format = workbook.add_format({'align': 'center'})
+                    worksheet.write('E' + str(offer_row), str(trial_count + mc_count), cell_format)
+                    tti = (trial_count + mc_count) * trial_cpa
+                    worksheet.write('G' + str(offer_row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                    offer_row += 1
+            else:
+                if trial_count > 0:
+                    cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                    worksheet.write('D' + str(offer_row), offer.name + ' Trial', cell_format)
+                    worksheet.write('F' + str(offer_row), "$ {:,.2f}".format(trial_cpa))
+                    cell_format = workbook.add_format({'align': 'center'})
+                    worksheet.write('E' + str(offer_row), str(trial_count), cell_format)
+                    tti = trial_count * trial_cpa
+                    worksheet.write('G' + str(offer_row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                    offer_row += 1
+                if mc_count > 0:
+                    cell_format = workbook.add_format({'bold': True, 'align': 'center'})
+                    worksheet.write('D' + str(offer_row), offer.name + ' MC', cell_format)
+                    worksheet.write('F' + str(offer_row), "$ {:,.2f}".format(mc_cpa))
+                    cell_format = workbook.add_format({'align': 'center'})
+                    worksheet.write('E' + str(offer_row), str(mc_count), cell_format)
+                    tti = mc_count * mc_cpa
+                    worksheet.write('G' + str(offer_row), "$ {:,.2f}".format(tti) if tti else "$  -")
+                    offer_row += 1
+
+        worksheet.write('B' + str(row + 3), "$ {:,.2f}".format(total))
+        row = offer_row + 2 if offer_row > row + 3 else row + 6
 
     workbook.close()
     xlsx_data = output.getvalue()

@@ -196,7 +196,7 @@ def save_cap_update_results(results, from_date, to_date, crm_id):
 
 
 @periodic_task(
-    run_every=(crontab(minute='*/60')),
+    run_every=(crontab(minute='*/59')),
     name="apps.lotus_dashboard.tasks.task_get_sales_report",
     ignore_result=True,
 )
@@ -250,14 +250,13 @@ def save_billing_results(billing, trial_result, mc_result, from_date, to_date):
 
 
 @periodic_task(
-    run_every=(crontab(minute='*/20')),
+    run_every=(crontab(minute='*/39')),
     name="apps.lotus_dashboard.tasks.task_get_billing_report",
     ignore_result=True,
 )
 def task_get_billing_report():
     today = timezone.datetime.now().date()
     week_start = today + timezone.timedelta(-today.weekday())
-    week_start = timezone.datetime.strptime('04/29/2019', '%m/%d/%Y')
     week_end = week_start + timezone.timedelta(6)
     billings = OfferBilling.objects.all()
 
