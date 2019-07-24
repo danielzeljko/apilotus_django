@@ -38,3 +38,16 @@ class AlertSetting(models.Model):
 
     def __str__(self):
         return self.crm.crm_name + '-' + str(self.value1) + '/' + str(self.value2)
+
+
+class AlertStatus(models.Model):
+    crm = models.ForeignKey(CrmAccount, on_delete=models.CASCADE)
+    type = models.ForeignKey(AlertType, on_delete=models.CASCADE)
+    value = models.IntegerField()
+    level = models.IntegerField()
+    status = models.BooleanField()
+    alert_read = models.BooleanField()
+    alert_delete = models.BooleanField()
+    from_date = models.DateField()
+    to_date = models.DateField()
+    timestamp = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)

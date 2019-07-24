@@ -28,7 +28,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 path.append(BASE_DIR)
 path.append(os.path.join(BASE_DIR, 'apps'))
 
-INTERNAL_IPS = ['*']
+INTERNAL_IPS = config('ALLOWED_HOSTS', cast=Csv())
 
 SITE_ID = 1
 
@@ -65,12 +65,13 @@ THIRD_PARTY_APPS = [
     'debug_toolbar',
     'localflavor',
     'widget_tweaks',
+    'django_telegrambot',
+    'django_extensions',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS + THIRD_PARTY_APPS
 
 MIDDLEWARE = [
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -78,8 +79,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.http.ConditionalGetMiddleware',
 ]
 
 ROOT_URLCONF = 'apilotus.urls'
@@ -109,7 +113,7 @@ WSGI_APPLICATION = 'apilotus.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 production = True
 if production:
-    DEBUG = False
+    DEBUG = True
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
     SECRET_KEY = config('SECRET_KEY')
     DATABASES = {
@@ -201,10 +205,19 @@ DEBUG_TOOLBAR_PANELS = [
     'debug_toolbar.panels.signals.SignalsPanel',
     'debug_toolbar.panels.logging.LoggingPanel',
     'debug_toolbar.panels.redirects.RedirectsPanel',
+    'debug_toolbar.panels.profiling.ProfilingPanel',
 ]
 
+
+def show_toolbar(request):
+    if not request.is_ajax() and request.user:
+        return True
+    return False
+
+
 DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
+    # 'INTERCEPT_REDIRECTS': False,
+    'SHOW_TOOLBAR_CALLBACK': 'apilotus.settings.show_toolbar',
 }
 
 # Internationalization
@@ -305,3 +318,8 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+try:
+    from .bot_settings import *
+except Exception as e:
+    print(e)
