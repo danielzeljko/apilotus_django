@@ -261,8 +261,10 @@ def task_get_billing_report():
     billings = OfferBilling.objects.all()
 
     for billing in billings:
-        print(billing)
         crm = billing.offer.crm
+        if crm.paused:
+            continue
+        print(billing)
         llcrm_hook = LLCRMHook(crm.id)
         trial_desktop = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.trial_desktop.campaign_id)
         trial_mobile = llcrm_hook.get_sales_report_for_billing(week_start.strftime('%m/%d/%Y'), week_end.strftime('%m/%d/%Y'), billing.trial_mobile.campaign_id)

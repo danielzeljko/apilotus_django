@@ -18,28 +18,28 @@ class LLCRMAPI(object):
         return result
 
 
-crm_accounts = [
-    ['https://falcor.limelightcrm.com', 'api-tool2', 'Wwk8v3GPwCJhkM'],
-    ['https://ebrandsoffers.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://securesystem.limelightcrm.com', 'api-tool2', 'yAFN4AuVCXzqgH'],
-    ['https://balance.limelightcrm.com', 'api-tool2', 'u9tT58A2sJeRve'],
-    ['https://mmsales.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://malibu.limelightcrm.com', 'trafficapi', 'nMtsTjH5gC7Jb'],
-    ['https://corecrm.limelightcrm.com', 'api-tool2', 'vEpRGJZgbYJZpJ'],
-    ['https://poswebsol.limelightcrm.com', 'api-tool2', '6xX4hTcWCapNQ'],
-    ['https://digitalaud.limelightcrm.com', 'api-tool2', 'z4FWdqhaa7rAFt'],
-    ['https://circlecomm.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://buyid.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://smoneyoffers.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://xldnet.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://vantage.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
-    ['https://tecsky.limelightcrm.com', 'api-tool2', '4WYTdU75yhsWfY'],
-]
-
-for crm in crm_accounts:
-    llcrm_api = LLCRMAPI(crm[0], crm[1], crm[2])
-    campaigns = llcrm_api.campaigns()
-    if campaigns['response_code'] != "100":
-        print(crm[0], campaigns['response_code'])
-    else:
-        print(crm[0], campaigns['response_code'], campaigns['campaigns'])
+# crm_accounts = [
+#     ['https://falcor.limelightcrm.com', 'api-tool2', 'Wwk8v3GPwCJhkM'],
+#     ['https://ebrandsoffers.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://securesystem.limelightcrm.com', 'api-tool2', 'yAFN4AuVCXzqgH'],
+#     ['https://balance.limelightcrm.com', 'api-tool2', 'u9tT58A2sJeRve'],
+#     ['https://mmsales.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://malibu.limelightcrm.com', 'trafficapi', 'nMtsTjH5gC7Jb'],
+#     ['https://corecrm.limelightcrm.com', 'api-tool2', 'vEpRGJZgbYJZpJ'],
+#     ['https://poswebsol.limelightcrm.com', 'api-tool2', '6xX4hTcWCapNQ'],
+#     ['https://digitalaud.limelightcrm.com', 'api-tool2', 'z4FWdqhaa7rAFt'],
+#     ['https://circlecomm.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://buyid.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://smoneyoffers.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://xldnet.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://vantage.limelightcrm.com', 'trafficapi', '6xX4hTcWCapNQ'],
+#     ['https://tecsky.limelightcrm.com', 'api-tool2', '4WYTdU75yhsWfY'],
+# ]
+#
+# for crm in crm_accounts:
+#     llcrm_api = LLCRMAPI(crm[0], crm[1], crm[2])
+#     campaigns = llcrm_api.campaigns()
+#     if campaigns['response_code'] != "100":
+#         print(crm[0], campaigns['response_code'])
+#     else:
+#         print(crm[0], campaigns['response_code'], campaigns['campaigns'])

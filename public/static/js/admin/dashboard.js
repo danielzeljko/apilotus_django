@@ -110,6 +110,7 @@ jQuery(document).ready(function(t) {
                         let tb_arr = [];
 
                         let position_ids = crm_positions.split(",");
+                        let idx = 1;
                         for (let r = 0; r < position_ids.length; r++) {
                             let crm_id = parseInt(position_ids[r]);
                             let crm = crm_list.filter(item => item['id'] === crm_id)[0];
@@ -160,7 +161,7 @@ jQuery(document).ready(function(t) {
                                     let setting_btn = '';
 
                                     if (0 === label_type) {
-                                        no_tag = '<span class="a_dsb_no_spn crm_row" id="row_' + crm_id + '">' + (r + 1) + '</span>';
+                                        no_tag = '<span class="a_dsb_no_spn crm_row" id="row_' + crm_id + '">' + (idx++) + '</span>';
                                         crm_tag = '<span data-toggle="tooltip" data-placement="bottom" id="ll' + crm_id + '" ' +
                                             'class="payment_badge payment_badge_blue crm_name_row a_sub_spn_vertical"' +
                                             ' title="' + timestamp + '">' + crm['crm_name'] + '</span>' +

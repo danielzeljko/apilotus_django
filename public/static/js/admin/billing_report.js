@@ -227,10 +227,10 @@ jQuery(document).ready(function(t) {
     }
 
     async function get_export_result() {
-        for (let i = 0; i < affiliations.length; i++) {
-            window.location.href = "/admin/export_billing_report/?affiliate_id=" + affiliations[i]['id'] + "&from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
-            await sleep(2000);
-        }
+        // for (let i = 0; i < affiliations.length; i++) {
+        //     window.location.href = "/admin/export_billing_report/?affiliate_id=" + affiliations[i]['id'] + "&from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
+        //     await sleep(2000);
+        // }
         window.location.href = "/admin/export_billing_reports/?from_date=" + t("#from_date").val() + "&to_date=" + t("#to_date").val();
     }
 
