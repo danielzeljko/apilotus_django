@@ -46,12 +46,14 @@ jQuery(document).ready(function(t) {
                 t("#crm4_" + crm_id + "_0").html(""),
                 t("#crm5_" + crm_id + "_0").html(""),
                 t("#crm6_" + crm_id + "_0").html(""),
-                t("#crm61_" + crm_id + "_0").html(""),
-                // t("#crm62_" + crm_id + "_0").html(""),
                 t("#crm7_" + crm_id + "_0").html(""),
                 t("#crm8_" + crm_id + "_0").html(""),
                 t("#crm9_" + crm_id + "_0").html(""),
                 t("#crm10_" + crm_id + "_0").html(""),
+                t("#crm11_" + crm_id + "_0").html(""),
+                t("#crm12_" + crm_id + "_0").html(""),
+                t("#crm_progress_" + crm_id + "_0").html(""),
+                t("#crm_goal_" + crm_id + "_0").html(""),
                 t(".subrow_" + crm_id).each(function(e) {
                     t(this).remove()
                 })) : t("#crm1_" + crm_id + "_0").html("");
@@ -59,23 +61,19 @@ jQuery(document).ready(function(t) {
     }
 
     function show_headers() {
-        if (dashboard_columns !== "") {
-            let columns = dashboard_columns.split(",");
-            for (let i = 1; i <= 8; i++) {
-                t(".table_overall th:nth-child(" + i + ")").hide();
-                t(".table_overall td:nth-child(" + i + ")").hide();
-                t(".table_dashboard th:nth-child(" + (i + 3) + ")").hide();
-                t(".table_dashboard td:nth-child(" + (i + 3) + ")").hide();
-
-                for (let j = 0; j < columns.length; j++) {
-                    if (i == columns[j]) {
-                        t(".table_overall th:nth-child(" + i + ")").show();
-                        t(".table_overall td:nth-child(" + i + ")").show();
-                        t(".table_dashboard th:nth-child(" + (i + 3) + ")").show();
-                        t(".table_dashboard td:nth-child(" + (i + 3) + ")").show();
-                        break
-                    }
-                }
+        if (dashboard_columns === "")
+            return;
+        let columns = dashboard_columns.split(",");
+        for (let i = 1; i <= 12; i++) {
+            if (columns.includes(i.toString())) {
+                t("#column_header_" + i.toString()).removeClass("g_none_dis");
+                t("span[id^=crm" +  + i.toString() + "_]").parent("td").removeClass("g_none_dis");
+                t("span[id^=crm" +  + i.toString() + "_]").removeClass("a_crm_td_none_dis");
+            }
+            else {
+                t("#column_header_" + i.toString()).addClass("g_none_dis");
+                t("span[id^=crm" +  + i.toString() + "_]").parent("td").addClass("g_none_dis");
+                t("span[id^=crm" +  + i.toString() + "_]").addClass("a_crm_td_none_dis");
             }
         }
     }
@@ -123,6 +121,8 @@ jQuery(document).ready(function(t) {
 
                                     let step1 = parseFloat(sales[i]['step1']);
                                     let step2 = parseFloat(sales[i]['step2']);
+                                    let mc_step1 = parseFloat(sales[i]['mc_step1']);
+                                    let mc_step2 = parseFloat(sales[i]['mc_step2']);
                                     let step1_nonpp = parseFloat(sales[i]['step1_nonpp']);
                                     let step2_nonpp = parseFloat(sales[i]['step2_nonpp']);
                                     let prepaid = parseFloat(sales[i]['prepaids']);
@@ -142,17 +142,18 @@ jQuery(document).ready(function(t) {
                                     let decline_p = (0 === gross_order) ? "0" : (decline / gross_order).toFixed(2);
                                     let s1pp = (0 === prepaid) ? "0" : (prepaid_step1 * 100 / prepaid).toFixed(2);
                                     let s2pp = (0 === prepaid) ? "0" : (prepaid_step2 * 100 / prepaid).toFixed(2);
+                                    let mc_p = (0 === (step1 + mc_step1)) ? "0" : (mc_step1 / (mc_step1 + step1)).toFixed(2);
 
                                     let progress_tag = '';
                                     let goal_tag = '';
 
                                     if (0 === label_type) {
-                                        progress_tag = '<span id="crm9_' + crm_id + "_" + label_type + '"><div class="bar-main-container"><div id="bar_' + crm_id + '" class="bar-percentage">' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0) + '%</div><div class="bar-container"><div class="bar" style="width: ' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0 )+ '%"></div></div></div></span>';
-                                        goal_tag += '<span id="crm10_' + crm_id + "_" + label_type + '">' + step1 + " / " + crm_goal + '</span>';
+                                        progress_tag = '<span id="crm_progress_' + crm_id + "_" + label_type + '"><div class="bar-main-container"><div id="bar_' + crm_id + '" class="bar-percentage">' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0) + '%</div><div class="bar-container"><div class="bar" style="width: ' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0 )+ '%"></div></div></div></span>';
+                                        goal_tag += '<span id="crm_goal_' + crm_id + "_" + label_type + '">' + step1 + " / " + crm_goal + '</span>';
                                     }
                                     else {
-                                        progress_tag = '<span id="crm9_' + crm_id + "_" + label_type + '">' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0) + ' %</span>';
-                                        goal_tag = '<span id="crm10_' + crm_id + "_" + label_type + '">' + step1 + " / " + crm_goal + '</span>';
+                                        progress_tag = '<span id="crm_progress_' + crm_id + "_" + label_type + '">' + (crm_goal > 0.0 ? Math.round(100 * step1 / crm_goal) : 0) + ' %</span>';
+                                        goal_tag = '<span id="crm_goal_' + crm_id + "_" + label_type + '">' + step1 + " / " + crm_goal + '</span>';
                                     }
 
                                     let no_tag = '';
@@ -181,14 +182,17 @@ jQuery(document).ready(function(t) {
                                         crm_tag,
                                         vertical_tag,
                                         '<span id="crm1_' + crm_id + "_" + label_type + '">' + step1 + '</span>',
-                                        '<span class="a_crm_td_none_dis" id="crm2_' + crm_id + "_" + label_type + '">' + step2 + '</span>',
+                                        '<span id="crm2_' + crm_id + "_" + label_type + '">' + step2 + '</span>',
                                         '<span id="crm3_' + crm_id + "_" + label_type + '">' + take_rate + '</span>',
                                         '<span id="crm4_' + crm_id + "_" + label_type + '">' + tablet + '</span>',
                                         '<span id="crm5_' + crm_id + "_" + label_type + '">' + tablet_p + '</span>',
                                         '<span id="crm6_' + crm_id + "_" + label_type + '">' + prepaid_step1 + '</span>',
-                                        '<span class="a_crm_td_none_dis" id="crm7_' + crm_id + "_" + label_type + '">' + order_p + '</span>',
-                                        '<span class="a_crm_td_none_dis" id="crm8_' + crm_id + "_" + label_type + '">' + decline_p + '</span>',
-                                        '<span id="crm61_' + crm_id + "_" + label_type + '">' + s1pp + '</span>',
+                                        '<span id="crm7_' + crm_id + "_" + label_type + '">' + s1pp + '</span>',
+                                        '<span id="crm8_' + crm_id + "_" + label_type + '">' + order_p + '</span>',
+                                        '<span id="crm9_' + crm_id + "_" + label_type + '">' + decline_p + '</span>',
+                                        '<span id="crm10_' + crm_id + "_" + label_type + '">' + mc_step1 + '</span>',
+                                        '<span id="crm11_' + crm_id + "_" + label_type + '">' + mc_step2 + '</span>',
+                                        '<span id="crm12_' + crm_id + "_" + label_type + '">' + mc_p + '</span>',
                                         progress_tag,
                                         goal_tag,
                                         setting_btn
@@ -199,7 +203,7 @@ jQuery(document).ready(function(t) {
                                 }
                             }
                         }
-                        for ( let k = 0; k < tb_arr.length; k ++ ) {
+                        for (let k = 0; k < tb_arr.length; k++) {
                             crm_table.row.add([
                                 tb_arr[k][0],
                                 tb_arr[k][1],
@@ -216,19 +220,19 @@ jQuery(document).ready(function(t) {
                                 tb_arr[k][12],
                                 tb_arr[k][13],
                                 tb_arr[k][14],
-                                // tb_arr[k][15],
+                                tb_arr[k][15],
+                                tb_arr[k][16],
+                                tb_arr[k][17],
+                                // tb_arr[k][18],
                             ]).draw(false);
                         }
                         // tooltip in device add modal
                         jQuery('[data-toggle="tooltip"]').tooltip();
                         calculate_total();
-                        // show_headers();
+                        show_headers();
 
                         jQuery(".a_sub_spn").parent("td").addClass("a_no_border_top");
                         jQuery(".a_sub_spn_vertical").parent("td").addClass("a_border_right");
-                        jQuery(".a_crm_td_none_dis").parent("td").addClass("g_none_dis");
-
-                        // new jQuery.fn.dataTable.FixedHeader( crm_table );
                     },
                     failure: function(e) {
                         show_alert("sales", "Cannot load sales information.")
@@ -260,9 +264,9 @@ jQuery(document).ready(function(t) {
                 tablet += parseInt(t("#crm4_" + crm_id + "_0").html());
                 tablet_percent += parseFloat(t("#crm5_" + crm_id + "_0").html());
                 prepaids += parseInt(t("#crm6_" + crm_id + "_0").html());
-                order_percent += parseFloat(t("#crm7_" + crm_id + "_0").html());
-                decline_percent += parseFloat(t("#crm8_" + crm_id + "_0").html());
-                goal += parseInt(t("#crm10_" + crm_id + "_0").html().split(' / ')[1]);
+                order_percent += parseFloat(t("#crm8_" + crm_id + "_0").html());
+                decline_percent += parseFloat(t("#crm9_" + crm_id + "_0").html());
+                goal += parseInt(t("#crm_goal_" + crm_id + "_0").html().split(' / ')[1]);
                 count++;
             }
         });
@@ -325,6 +329,7 @@ jQuery(document).ready(function(t) {
         }
         t("#from_date").val(from_date);
         t("#to_date").val(to_date);
+        show_result();
     }
 
     function format_date(year, month, date) {
@@ -350,6 +355,26 @@ jQuery(document).ready(function(t) {
             failure: function() {
                 show_waiting("sales", "", false);
                 show_alert("sales", "Cannot update CRM Sales Goal.");
+            }
+        })
+    }
+
+    function update_dashboard_columns(column) {
+        show_waiting("sales", "", true);
+        t.ajax({
+            type: "GET",
+            url: "/admin/ajax_setting_crm_column",
+            data: {
+                crm_column: column
+            },
+            success: function(response) {
+                show_waiting("sales", "", false);
+                if ("OK" === response)
+                    show_result();
+            },
+            failure: function() {
+                show_waiting("sales", "", false);
+                show_alert("sales", "Cannot update CRM dashboard column.");
             }
         })
     }
@@ -431,6 +456,26 @@ jQuery(document).ready(function(t) {
         });
         t("#quick_edit_modal").modal("toggle");
         bulk_update_crm_goal(ids, goals);
+    });
+
+    t(".btn_select_column").click(function() {
+        let columns = dashboard_columns.split(',');
+        for (let i = 0; i < columns.length; i++) {
+            t("#column_" + columns[i]).attr('checked', true);
+        }
+        t("#show_columns_modal").modal("toggle");
+    });
+    t(".modal_btn_show_columns").click(function() {
+        let ids = "";
+        t(".show_column").each(function() {
+            if (t(this).is(':checked')) {
+                "" !== ids && (ids += ",");
+                ids += t(this).prop("id").substring(7);
+            }
+        });
+        t("#show_columns_modal").modal("toggle");
+        dashboard_columns = ids;
+        update_dashboard_columns(ids);
     });
 
     t(".table_dashboard").on("click", ".btn_setting", function() {
@@ -555,22 +600,6 @@ jQuery(document).ready(function(t) {
     }, 5* 60 * 1000);
 
     crm_positions = t("#crm_positions").html();
+    dashboard_columns = t("#crm_columns").html();
     set_dates();
-
-    // get dashboard_columns
-    show_waiting("sales", "", true);
-    t.ajax({
-        type: "GET",
-        url: "/admin/ajax_dashboard_columns_get",
-        data: {},
-        success: function(result) {
-            show_waiting("sales", "", false);
-            dashboard_columns = result;
-            show_result();
-        },
-        failure: function() {
-            show_waiting("sales", "", false);
-            show_alert("sales", "Cannot load columns for dashboard.");
-        }
-    });
 });
