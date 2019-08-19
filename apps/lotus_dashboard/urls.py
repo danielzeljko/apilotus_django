@@ -27,14 +27,13 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard, name='setting_payment'),
     url(r'^dashboard/$', views.dashboard, name='logout'),
 
-    url(r'^ajax_dashboard_columns_get/$', views.ajax_dashboard_columns_get, name='url_dashboard_columns_get'),
-
     url(r'^ajax_crm_list/$', views.ajax_crm_list, name='url_crm_list'),
     url(r'^ajax_setting_crm_list/$', views.ajax_setting_crm_list, name='url_setting_crm_list'),
     url(r'^ajax_setting_crm_add/$', views.ajax_setting_crm_add, name='url_setting_crm_add'),
     url(r'^ajax_setting_crm_edit/$', views.ajax_setting_crm_edit, name='url_setting_crm_edit'),
     url(r'^ajax_setting_crm_delete/$', views.ajax_setting_crm_delete, name='url_setting_crm_delete'),
     url(r'^ajax_setting_crm_goal/$', views.ajax_setting_crm_goal, name='url_setting_crm_goal'),
+    url(r'^ajax_setting_crm_column/$', views.ajax_setting_crm_column, name='url_setting_crm_column'),
     url(r'^ajax_crm_position_set/$', views.ajax_crm_position_set, name='url_crm_position_set'),
 
     url(r'^ajax_dashboard_sales_all/$', views.ajax_dashboard_sales_all, name='url_dashboard_sales_all'),

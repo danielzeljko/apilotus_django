@@ -55,6 +55,8 @@ class LLCRMHook(object):
         campaign_prepaids_step2 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=3).filter(campaign_format=2)
         campaign_tablet_step1 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=4).filter(campaign_format=1)
         campaign_tablet_step2 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=4).filter(campaign_format=2)
+        campaign_mc_step1 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=5)
+        campaign_mc_step2 = LabelCampaign.objects.filter(crm_id=self.crm_id).filter(campaign_type=6)
 
         label_info = LabelGoal.objects.filter(crm_id=self.crm_id).filter(visible=True)
         results = [{
@@ -62,6 +64,8 @@ class LLCRMHook(object):
             'label_goal': 0,
             'step1': 0,
             'step2': 0,
+            'mc_step1': 0,
+            'mc_step2': 0,
             'step1_nonpp': 0,
             'step2_nonpp': 0,
             'prepaids': 0,
@@ -80,6 +84,8 @@ class LLCRMHook(object):
                 'label_goal': label_goal.goal,
                 'step1': 0,
                 'step2': 0,
+                'mc_step1': 0,
+                'mc_step2': 0,
                 'step1_nonpp': 0,
                 'step2_nonpp': 0,
                 'prepaids': 0,
@@ -114,6 +120,18 @@ class LLCRMHook(object):
                         if label_goal.label_id == item.label.id:
                             results[idx + 1]['step2'] += prospect['initial_customer']
                             results[idx + 1]['step2_nonpp'] += prospect['initial_customer']
+            for item in campaign_mc_step1:
+                if item.campaign_id == prospect['campaign_id']:
+                    results[0]['mc_step1'] += prospect['initial_customer']
+                    for idx, label_goal in enumerate(label_info):
+                        if label_goal.label_id == item.label.id:
+                            results[idx + 1]['mc_step1'] += prospect['initial_customer']
+            for item in campaign_mc_step2:
+                if item.campaign_id == prospect['campaign_id']:
+                    results[0]['mc_step2'] += prospect['initial_customer']
+                    for idx, label_goal in enumerate(label_info):
+                        if label_goal.label_id == item.label.id:
+                            results[idx + 1]['mc_step2'] += prospect['initial_customer']
             for item in campaign_prepaids:
                 if item.campaign_id == prospect['campaign_id']:
                     results[0]['prepaids'] += prospect['initial_customer']

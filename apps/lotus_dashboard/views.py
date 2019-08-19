@@ -16,12 +16,16 @@ from apilotus import settings
 @login_required
 def dashboard(request):
     user = request.user
+    site = get_current_site(request)
     crm_positions = user.crm_positions
+    columns = DashboardColumn.objects.get(user=user, site=site)
 
     context = {
         'tab_name': 'Dashboard',
         'crm_positions': crm_positions,
         'alert_count': 7,   # $alert_count = $dbApi->getRecentAlertCount($userId);
+        'columns': columns.columns,
+        'columns_list': columns.columns.split(','),
     }
     return render(request, 'dashboard/dashboard.html', context=context)
 
@@ -93,13 +97,6 @@ def view_billing_report(request):
     return render(request, 'billing/billing_report.html', context=context)
 
 
-# ajax functions
-def ajax_dashboard_columns_get(request):
-    site = get_current_site(request)
-    columns = DashboardColumn.objects.get(site=site)
-    return HttpResponse(columns.columns)
-
-
 def ajax_crm_list(request):
     user = request.user
     if user.is_staff:
@@ -130,6 +127,18 @@ def ajax_setting_crm_goal(request):
         if crm.sales_goal != int(crm_goals[idx]):
             crm.sales_goal = int(crm_goals[idx])
             crm.save()
+
+    return HttpResponse('OK')
+
+
+def ajax_setting_crm_column(request):
+    crm_column = request.GET['crm_column']
+
+    user = request.user
+    site = get_current_site(request)
+    columns = DashboardColumn.objects.get(user=user, site=site)
+    columns.columns = crm_column
+    columns.save()
 
     return HttpResponse('OK')
 

@@ -55,6 +55,8 @@ def save_crm_results(crm_results, from_date, to_date, crm_id):
         crm_result.goal = result['label_goal']
         crm_result.step1 = result['step1']
         crm_result.step2 = result['step2']
+        crm_result.mc_step1 = result['mc_step1']
+        crm_result.mc_step2 = result['mc_step2']
         crm_result.step1_nonpp = result['step1_nonpp']
         crm_result.step2_nonpp = result['step2_nonpp']
         crm_result.prepaids = result['prepaids']

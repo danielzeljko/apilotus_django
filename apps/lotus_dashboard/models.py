@@ -3,8 +3,16 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.sites.models import Site
 from django.db import models
 
+from apilotus import settings
+
+try:
+    User = settings.AUTH_USER_MODEL
+except ImportError:
+    from django.contrib.auth.models import User
+
 
 class DashboardColumn(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     columns = models.CharField(max_length=100)
 
@@ -116,6 +124,8 @@ class CrmResult(models.Model):
     goal = models.IntegerField()
     step1 = models.IntegerField()
     step2 = models.IntegerField()
+    mc_step1 = models.IntegerField()
+    mc_step2 = models.IntegerField()
     step1_nonpp = models.IntegerField()
     step2_nonpp = models.IntegerField()
     prepaids = models.IntegerField()
@@ -161,6 +171,8 @@ CAMPAIGN_TYPE = (
     (2, 'Step2'),
     (3, 'Prepaids'),
     (4, 'Tablet'),
+    (5, 'MC Step1'),
+    (6, 'MC Step2'),
 )
 
 CAMPAIGN_FORMAT = (

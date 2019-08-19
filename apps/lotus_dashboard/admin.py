@@ -4,7 +4,7 @@ from lotus_dashboard.models import *
 
 
 class DashboardColumnAdmin(admin.ModelAdmin):
-    list_display = ['site', 'columns']
+    list_display = ['user', 'site', 'columns']
     list_filter = ['site']
 
 
@@ -15,6 +15,7 @@ class BlockedIPAdmin(admin.ModelAdmin):
 
 class CrmAccountAdmin(admin.ModelAdmin):
     list_display = ['crm_name', 'crm_url', 'sales_goal', 'paused', 'password_updated', 'rebill_length']
+    list_filter = ['paused']
 
 
 class LabelAdmin(admin.ModelAdmin):

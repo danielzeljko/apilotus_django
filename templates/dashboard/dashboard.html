@@ -99,6 +99,7 @@
                 <div class="col-sm-5 a_mobile_crm_div" style="text-align: right; padding-right: 30px">
                     <button type="button" class="btn btn-default btn-sm btn_crm_position"><span class="glyphicon glyphicon-sort" aria-hidden="true"></span> CRM Position</button>
                     <button type="button" class="btn btn-default btn-sm btn_quick_edit" data-toggle="modal" data-target="#quick_edit_modal"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Quick Edit</button>
+                    <button type="button" class="btn btn-default btn-sm btn_select_column" data-toggle="modal"><span class="glyphicon glyphicon-check" aria-hidden="true"></span> Select Columns</button>
                 </div>
             </div>
             <div class="row a_no_lr_margin">
@@ -109,15 +110,18 @@
                                 <th>#</th>
                                 <th>CRM</th>
                                 <th>VERTICAL</th>
-                                <th>STEP 1</th>
-                                <th class="g_none_dis">STEP 2</th>
-                                <th>TAKE RATE</th>
-                                <th>TABLET</th>
-                                <th>STEP1 TABLET %</th>
-                                <th>S1 PREPAIDS</th>
-                                <th class="g_none_dis">ORDER%</th>
-                                <th class="g_none_dis">DECLINE%</th>
-                                <th>S1 PP%</th>
+                                <th id="column_header_1">STEP 1</th>
+                                <th id="column_header_2">STEP 2</th>
+                                <th id="column_header_3">TAKE RATE</th>
+                                <th id="column_header_4">TABLET</th>
+                                <th id="column_header_5">STEP1 TABLET %</th>
+                                <th id="column_header_6">S1 PREPAIDS</th>
+                                <th id="column_header_7">S1 PP%</th>
+                                <th id="column_header_8">ORDER%</th>
+                                <th id="column_header_9">DECLINE%</th>
+                                <th id="column_header_10">MC STEP1</th>
+                                <th id="column_header_11">MC STEP2</th>
+                                <th id="column_header_12">MC%</th>
                                 <th>GOAL%</th>
                                 <th>GOAL</th>
 {#                                <th>UPDATED</th>#}
@@ -133,6 +137,7 @@
         </div>
     </div>
     <span id="crm_positions" style="display: none;">{{ crm_positions }}</span>
+    <span id="crm_columns" style="display: none;">{{ columns }}</span>
 </div>
 {% endblock %}
 
