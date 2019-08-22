@@ -45,3 +45,25 @@ def view_setting_alert_edit(request):
         alert_setting.value2 = value2
     alert_setting.save()
     return HttpResponse('OK')
+
+
+def view_alert_recent_list(request):
+    alert_status = AlertStatus.objects.filter(status=False).values('id', 'crm__crm_name', 'type', 'value', 'level',
+                                                                   'from_date', 'to_date')
+    return JsonResponse(list(alert_status), safe=False)
+
+
+def view_alert_delete(request):
+    alert_id = int(request.GET.get('alert_id', 0))
+    alert = AlertStatus.objects.get(id=alert_id)
+    alert.status = True
+    alert.save()
+    return HttpResponse('OK')
+
+
+def view_alert_delete_all(request):
+    alerts = AlertStatus.objects.all()
+    for alert in alerts:
+        alert.status = True
+        alert.save()
+    return HttpResponse('OK')

@@ -33,6 +33,11 @@ def task_step1_sales():
                 id=idx + 1, crm_name=crm_result.crm.crm_name, step1=crm_result.step1, goal=crm_result.crm.sales_goal,
                 percent=int((crm_result.step1 / crm_result.crm.sales_goal) * 100) if crm_result.crm.sales_goal else 0,
             ) + '\r\n'
+            alert_status = AlertStatus(
+                crm=crm_result.crm, type=alert_type, from_date=from_date, to_date=to_date,
+                value=crm_result.crm.sales_goal, level=crm_result.step1, status=False, alert_read=False, alert_delete=False,
+            )
+            alert_status.save()
 
         telegram_bot = TelegramBot()
         telegram_bot.send_message(text)
@@ -69,6 +74,11 @@ def task_prospect_report():
         alert_type = AlertType.objects.get(alert_name='Step 1 CRM Capped')
         if sales_step1 == crm_result.crm.sales_goal:
             capped_result.append(crm_result)
+            alert_status = AlertStatus(
+                crm=crm, type=alert_type, from_date=from_date, to_date=to_date,
+                value=crm.sales_goal, level=crm.sales_goal, status=False, alert_read=False, alert_delete=False,
+            )
+            alert_status.save()
 
         alert_type = AlertType.objects.get(alert_name='100 Step1 Sales Away From Cap')
         current_hour = timezone.datetime.now().hour
@@ -77,6 +87,11 @@ def task_prospect_report():
                                                             sales_step1 >= crm_result.crm.sales_goal - 50 or
                                                             sales_step1 >= crm_result.crm.sales_goal - 10):
                 away_result.append(crm_result)
+                alert_status = AlertStatus(
+                    crm=crm, type=alert_type, from_date=from_date, to_date=to_date,
+                    value=crm.sales_goal, level=sales_step1, status=False, alert_read=False, alert_delete=False,
+                )
+                alert_status.save()
 
         alert_type = AlertType.objects.get(alert_name='10 Step1 Sales Over Cap')
         current_hour = timezone.datetime.now().hour
@@ -91,6 +106,11 @@ def task_prospect_report():
                     sales_step1 >= crm_result.crm.sales_goal + 200 or \
                     sales_step1 >= crm_result.crm.sales_goal + 250:
                 over_result.append(crm_result)
+                alert_status = AlertStatus(
+                    crm=crm, type=alert_type, from_date=from_date, to_date=to_date,
+                    value=crm.sales_goal, level=sales_step1, status=False, alert_read=False, alert_delete=False,
+                )
+                alert_status.save()
 
     telegram_bot = TelegramBot()
 

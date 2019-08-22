@@ -51,3 +51,11 @@ class AlertStatus(models.Model):
     from_date = models.DateField()
     to_date = models.DateField()
     timestamp = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Alert Status')
+        verbose_name_plural = _('Alert Status')
+        ordering = ['pk']
+
+    def __str__(self):
+        return self.crm.crm_name + '-' + self.type.alert_name

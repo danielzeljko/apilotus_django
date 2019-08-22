@@ -6,6 +6,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from lotus_alert.models import AlertStatus
 from lotus_dashboard.models import *
 from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns, task_get_initial_reports, \
     task_get_rebill_reports, task_get_sales_report, task_get_billing_report
@@ -18,12 +19,13 @@ def dashboard(request):
     user = request.user
     site = get_current_site(request)
     crm_positions = user.crm_positions
+    alert_counts = AlertStatus.objects.filter(status=False).count()
     columns = DashboardColumn.objects.get(user=user, site=site)
 
     context = {
         'tab_name': 'Dashboard',
         'crm_positions': crm_positions,
-        'alert_count': 7,   # $alert_count = $dbApi->getRecentAlertCount($userId);
+        'alert_count': alert_counts,
         'columns': columns.columns,
         'columns_list': columns.columns.split(','),
     }
@@ -519,17 +521,12 @@ def view_get_dashboard_sales(request):
 
 
 def view_get_initial_reports(request):
-    today = timezone.datetime.now().date()
-    week_start = today + timezone.timedelta(-today.weekday())
-    task_get_initial_reports(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
+    task_get_initial_reports()
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 
 def view_get_rebill_reports(request):
-    cur_date = timezone.datetime.now().date()
-    from_date = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
-    to_date = from_date + timezone.timedelta(days=6)
-    task_get_rebill_reports(from_date.strftime('%m/%d/%Y'), to_date.strftime('%m/%d/%Y'))
+    task_get_rebill_reports()
     return redirect('/' + settings.LOTUS_ADMIN_URL)
 
 

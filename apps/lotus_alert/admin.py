@@ -14,5 +14,12 @@ class AlertSettingAdmin(admin.ModelAdmin):
     list_display = ['crm', 'type', 'value1', 'value2']
 
 
+class AlertStatusAdmin(admin.ModelAdmin):
+    list_filter = ['crm', 'type']
+
+    list_display = ['crm', 'type', 'value', 'level', 'status', 'alert_read', 'alert_delete', 'from_date', 'to_date', 'timestamp']
+
+
 admin.site.register(AlertType, AlertTypeAdmin)
 admin.site.register(AlertSetting, AlertSettingAdmin)
+admin.site.register(AlertStatus, AlertStatusAdmin)

@@ -100,11 +100,19 @@ def task_get_dashboard_sales():
             save_crm_results(crm_results, yesterday, yesterday, crm.id)
 
 
-def task_get_initial_reports(from_date, to_date, cycle=1):
-    crm_list = CrmAccount.objects.active_crm_accounts()
-    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+@periodic_task(
+    run_every=(crontab(hour='*/3')),
+    name="apps.lotus_dashboard.tasks.task_get_initial_reports",
+    ignore_result=True,
+)
+def task_get_initial_reports():
+    today = timezone.datetime.now().date()
+    week_start = today + timezone.timedelta(-today.weekday())
+    from_date = week_start.strftime('%m/%d/%Y')
+    to_date = today.strftime('%m/%d/%Y')
+    cycle = 1
 
+    crm_list = CrmAccount.objects.active_crm_accounts()
     for crm in crm_list:
         print(crm)
         results = []
@@ -131,21 +139,30 @@ def task_get_initial_reports(from_date, to_date, cycle=1):
                     '%.2f' % (retention['net_approved'] * 100 / retention['gross_orders'])], aids])
 
         try:
-            initial_result = InitialResult.objects.get(from_date=from_date_, to_date=to_date_, crm=crm)
+            initial_result = InitialResult.objects.get(from_date=week_start, to_date=today, crm=crm)
         except InitialResult.DoesNotExist:
             initial_result = InitialResult()
-            initial_result.from_date = from_date_
-            initial_result.to_date = to_date_
+            initial_result.from_date = week_start
+            initial_result.to_date = today
             initial_result.crm = crm
         initial_result.result = str(results)
         initial_result.save()
 
 
-def task_get_rebill_reports(from_date, to_date, cycle=2):
-    rebill_list = Rebill.objects.filter(crm__paused=False)
-    from_date_ = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
-    to_date_ = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
+@periodic_task(
+    run_every=(crontab(hour='*/3')),
+    name="apps.lotus_dashboard.tasks.task_get_rebill_reports",
+    ignore_result=True,
+)
+def task_get_rebill_reports():
+    cur_date = timezone.datetime.now().date()
+    from_date_ = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
+    to_date_ = from_date_ + timezone.timedelta(days=6)
+    from_date = from_date_.strftime('%m/%d/%Y')
+    to_date = to_date_.strftime('%m/%d/%Y')
+    cycle = 2
 
+    rebill_list = Rebill.objects.filter(crm__paused=False)
     for rebill in rebill_list:
         print(rebill.crm)
         results = []
