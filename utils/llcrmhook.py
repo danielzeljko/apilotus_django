@@ -21,7 +21,7 @@ class LLCRMHook(object):
     def login(self):
         try:
             token = CrmToken.objects.get(crm_id=self.crm_id)
-            if (timezone.now() - token.timestamp).seconds < 1440:   # expired token
+            if (timezone.now() - token.timestamp).total_seconds() < 1440:   # expired token
                 token.save()
                 self.token = token.token
                 return
@@ -340,7 +340,10 @@ class LLCRMHook(object):
 
         prospects = data.xpath('//table[@class="list "]/tr')
 
-        page_type = prospects[0].xpath('.//td[1]/span/text()')[0]
+        try:
+            page_type = prospects[0].xpath('.//td[1]/span/text()')[0]
+        except IndexError:
+            return []
 
         results = []
         for prospect in prospects[1:]:

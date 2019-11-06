@@ -1,3 +1,5 @@
+from json import JSONDecodeError
+
 import requests
 from requests.auth import HTTPBasicAuth
 import json
@@ -11,7 +13,11 @@ class LLCRMAPI(object):
 
     def api_response(self, endpoint):
         response = requests.request("POST", self.base_url + endpoint, auth=HTTPBasicAuth(self.username, self.password))
-        return json.loads(response.text)
+        try:
+            result = json.loads(response.text)
+        except JSONDecodeError:
+            result = {'response_code': 'JSONDecodeError'}
+        return result
 
     def campaigns(self):
         result = self.api_response('campaign_find_active')

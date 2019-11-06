@@ -101,7 +101,7 @@ def task_get_dashboard_sales():
 
 
 @periodic_task(
-    run_every=(crontab(hour='*/3')),
+    run_every=(crontab(hour='*/6')),
     name="apps.lotus_dashboard.tasks.task_get_initial_reports",
     ignore_result=True,
 )
@@ -203,6 +203,8 @@ def task_get_rebill_reports():
 
 
 def save_cap_update_results(results, from_date, to_date, crm_id):
+    if not results:
+        return
     try:
         cap_update_result = CapUpdateResult.objects.get(from_date=from_date, to_date=to_date, crm=crm_id)
     except CapUpdateResult.DoesNotExist:
