@@ -29,8 +29,8 @@ class LabelGoalAdmin(admin.ModelAdmin):
 
 
 class LabelCampaignAdmin(admin.ModelAdmin):
-    list_display = ['crm', 'campaign_id', 'campaign_name', 'campaign_label', 'updated_at']
-    list_filter = ['updated_at', 'campaign_id', 'crm']
+    list_display = ['crm', 'campaign_id', 'campaign_name', 'campaign_label', 'pid', 'updated_at']
+    list_filter = ['updated_at', 'label', 'campaign_format', 'campaign_type', 'campaign_id', 'crm']
     search_fields = ['campaign_id', 'campaign_name']
     readonly_fields = ['crm', 'campaign_id', 'campaign_name']
 

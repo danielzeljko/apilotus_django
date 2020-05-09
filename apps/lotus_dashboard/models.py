@@ -190,6 +190,7 @@ class LabelCampaign(models.Model):
     campaign_type = models.IntegerField(choices=CAMPAIGN_TYPE, null=True, blank=True)
     campaign_format = models.IntegerField(choices=CAMPAIGN_FORMAT, null=True, blank=True)
     label = models.ForeignKey(Label, on_delete=models.CASCADE, null=True, blank=True)
+    pid = models.CharField(verbose_name='Product IDs', max_length=255, null=True, blank=True)
 
     updated_at = models.DateTimeField(verbose_name=_('Updated at'), auto_now=True)
 

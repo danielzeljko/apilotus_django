@@ -25,9 +25,7 @@ class CapUpdateResultViewSet(ModelViewSet):
             from_date = timezone.datetime.strptime(from_date, "%m/%d/%Y").date()
             to_date = timezone.datetime.strptime(to_date, "%m/%d/%Y").date()
             self.queryset = CapUpdateResult.objects.filter(crm_id=crm_id, from_date=from_date, to_date=to_date)
-            return self.queryset
-        else:
-            return self.queryset
+        return self.queryset
 
 
 class OfferViewSet(ModelViewSet):

@@ -1,6 +1,7 @@
 import psycopg2
-
 import time
+from decouple import config
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
@@ -12,14 +13,14 @@ import json
 
 
 pro_conn = psycopg2.connect(
-    host="pro.apilotus.com",
-    database="apilotus",
-    user="apilotus",
-    password="1g2cp0uk",
+    host=config('DB_HOST'),
+    database=config('DB_NAME'),
+    user=config('DB_USER'),
+    password=config('DB_PASSWORD'),
 )
 pro_cursor = pro_conn.cursor()
 
-query = "SELECT * FROM lotus_dashboard_crmaccount ORDER BY id"
+query = "SELECT * FROM lotus_dashboard_crmaccount WHERE paused=FALSE ORDER BY id"
 pro_cursor.execute(query)
 pro_crms = pro_cursor.fetchall()
 
@@ -58,6 +59,7 @@ class LLCRMAPI(object):
 
 
 for crm in pro_crms:
+    print(crm)
     llcrm_api = LLCRMAPI(crm[2], crm[5], crm[6])
     campaigns = llcrm_api.campaigns()
     if campaigns['response_code'] != '100':

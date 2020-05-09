@@ -1,5 +1,0 @@
-.idea/*
-*.pyc
-*/*.pyc
-*.sqlite3
-*/migrations/0*

@@ -1,5 +1,6 @@
 import psycopg2
 import pymysql
+from decouple import config
 
 dash_conn = pymysql.connect(
     host="dash.apilotus.com",
@@ -10,10 +11,10 @@ dash_conn = pymysql.connect(
 dash_cursor = dash_conn.cursor()
 
 pro_conn = psycopg2.connect(
-    host="pro.apilotus.com",
-    database="apilotus",
-    user="apilotus",
-    password="1g2cp0uk",
+    host=config('DB_HOST'),
+    database=config('DB_NAME'),
+    user=config('DB_USER'),
+    password=config('DB_PASSWORD'),
 )
 pro_cursor = pro_conn.cursor()
 

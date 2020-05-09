@@ -1,10 +1,11 @@
 from django.utils import timezone
 
 from celery.schedules import crontab
-from celery.task import task, periodic_task
+from celery.task import periodic_task
 
 from lotus_dashboard.models import *
 
+from utils.llcrm import LLCRM
 from utils.llcrmapi import LLCRMAPI
 from utils.llcrmhook import LLCRMHook
 
@@ -41,16 +42,15 @@ def task_update_campaigns():
             label_campaign.save()
 
 
-def save_crm_results(crm_results, from_date, to_date, crm_id):
+def save_crm_results(crm_results, from_date, to_date, crm):
     for result in crm_results:
         try:
-            crm_result = CrmResult.objects.get(from_date=from_date, to_date=to_date, crm_id=crm_id,
-                                               label_id=result['label_id'])
+            crm_result = CrmResult.objects.get(from_date=from_date, to_date=to_date, crm=crm, label_id=result['label_id'])
         except CrmResult.DoesNotExist:
             crm_result = CrmResult()
             crm_result.from_date = from_date
             crm_result.to_date = to_date
-            crm_result.crm_id = crm_id
+            crm_result.crm = crm
             crm_result.label_id = result['label_id']
         crm_result.goal = result['label_goal']
         crm_result.step1 = result['step1']
@@ -72,7 +72,7 @@ def save_crm_results(crm_results, from_date, to_date, crm_id):
 
 
 @periodic_task(
-    run_every=(crontab(minute='*/29')),
+    run_every=(crontab(minute='45')),
     name="apps.lotus_dashboard.tasks.task_get_dashboard_sales",
     ignore_result=True,
 )
@@ -84,27 +84,30 @@ def task_get_dashboard_sales():
     crm_list = CrmAccount.objects.active_crm_accounts()
     for crm in crm_list:
         print(crm)
-        llcrm_hook = LLCRMHook(crm.id)
+        llcrm_hook = LLCRM(crm)
 
-        # Week To Date
-        crm_results = llcrm_hook.get_crm_sales(week_start.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-        save_crm_results(crm_results, week_start, today, crm.id)
-
-        # Today
-        crm_results = llcrm_hook.get_crm_sales(today.strftime('%m/%d/%Y'), today.strftime('%m/%d/%Y'))
-        save_crm_results(crm_results, today, today, crm.id)
-
-        # Yesterday
         if not CrmResult.objects.filter(from_date=yesterday, to_date=yesterday, crm=crm).exists():
-            crm_results = llcrm_hook.get_crm_sales(yesterday.strftime('%m/%d/%Y'), yesterday.strftime('%m/%d/%Y'))
-            save_crm_results(crm_results, yesterday, yesterday, crm.id)
+            results, results_yesterday, results_wtd, today_cap, yesterday_cap, wtd_cap = llcrm_hook.get_crm_sales(yesterday=True)
+        else:
+            results, results_yesterday, results_wtd, today_cap, yesterday_cap, wtd_cap = llcrm_hook.get_crm_sales()
+
+        save_crm_results(results, today, today, crm)
+        if results_yesterday:
+            save_crm_results(results_yesterday, yesterday, yesterday, crm)
+        save_crm_results(results_wtd, week_start, today, crm)
+
+        # cap update results
+        save_cap_update_results(today_cap, today, today, crm.id)
+        if yesterday_cap:
+            save_cap_update_results(yesterday_cap, yesterday, yesterday, crm.id)
+        save_cap_update_results(wtd_cap, week_start, today, crm.id)
 
 
-@periodic_task(
-    run_every=(crontab(hour='*/6')),
-    name="apps.lotus_dashboard.tasks.task_get_initial_reports",
-    ignore_result=True,
-)
+# @periodic_task(
+#     run_every=(crontab(hour='*/6')),
+#     name="apps.lotus_dashboard.tasks.task_get_initial_reports",
+#     ignore_result=True,
+# )
 def task_get_initial_reports():
     today = timezone.datetime.now().date()
     week_start = today + timezone.timedelta(-today.weekday())
@@ -149,11 +152,11 @@ def task_get_initial_reports():
         initial_result.save()
 
 
-@periodic_task(
-    run_every=(crontab(hour='*/3')),
-    name="apps.lotus_dashboard.tasks.task_get_rebill_reports",
-    ignore_result=True,
-)
+# @periodic_task(
+#     run_every=(crontab(hour='*/3')),
+#     name="apps.lotus_dashboard.tasks.task_get_rebill_reports",
+#     ignore_result=True,
+# )
 def task_get_rebill_reports():
     cur_date = timezone.datetime.now().date()
     from_date_ = cur_date - timezone.timedelta(days=cur_date.weekday() + 22)
@@ -216,11 +219,11 @@ def save_cap_update_results(results, from_date, to_date, crm_id):
     cap_update_result.save()
 
 
-@periodic_task(
-    run_every=(crontab(minute='*/59')),
-    name="apps.lotus_dashboard.tasks.task_get_sales_report",
-    ignore_result=True,
-)
+# @periodic_task(
+#     run_every=(crontab(minute='*/59')),
+#     name="apps.lotus_dashboard.tasks.task_get_sales_report",
+#     ignore_result=True,
+# )
 def task_get_sales_report():
     today = timezone.datetime.now().date()
     yesterday = today + timezone.timedelta(-1)
@@ -270,11 +273,11 @@ def save_billing_results(billing, trial_result, mc_result, from_date, to_date):
     billing_result.save()
 
 
-@periodic_task(
-    run_every=(crontab(minute='*/39')),
-    name="apps.lotus_dashboard.tasks.task_get_billing_report",
-    ignore_result=True,
-)
+# @periodic_task(
+#     run_every=(crontab(minute='*/39')),
+#     name="apps.lotus_dashboard.tasks.task_get_billing_report",
+#     ignore_result=True,
+# )
 def task_get_billing_report():
     today = timezone.datetime.now().date()
     week_start = today + timezone.timedelta(-today.weekday())
