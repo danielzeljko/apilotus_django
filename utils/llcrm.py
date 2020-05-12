@@ -344,3 +344,77 @@ class LLCRM(object):
         print('RETENTION - WEEK TO DATE, ' + str(len(wtd)))
 
         return today, yesterday_result, wtd
+
+    def get_custom_report(self):
+        headers = {'cookie': self.token}
+        response = requests.get(self.prospect_url, headers=headers)
+        prospect_page = fromstring(response.text)
+        iframe_src = prospect_page.xpath('//iframe/@src')[0]
+
+        response = requests.get(iframe_src, headers=headers)
+        cookie = response.headers['set-cookie']
+        iframe = fromstring(response.text)
+        csrf_token = iframe.xpath('//meta[@name="csrf-token"]/@content')[0]
+
+        headers = {
+            'cookie': cookie,
+            'X-CSRF-Token': csrf_token,
+        }
+
+        # get today result
+        date = 'today'
+        start_ms = str(int(timezone.now().timestamp() * 1000))
+        # data = '[{"result_maker_id":12842,"merge_result_id":null,"query_id":1083454,"vis_config":{"show_view_names":true,"show_row_numbers":true,"truncate_column_names":false,"hide_totals":false,"hide_row_totals":false,"table_theme":"gray","limit_displayed_rows":false,"type":"table","stacking":"","show_value_labels":false,"label_density":25,"legend_position":"center","x_axis_gridlines":false,"y_axis_gridlines":true,"y_axis_combined":true,"show_y_axis_labels":true,"show_y_axis_ticks":true,"y_axis_tick_density":"default","y_axis_tick_density_custom":5,"show_x_axis_label":true,"show_x_axis_ticks":true,"x_axis_scale":"auto","y_axis_scale_mode":"linear","ordering":"none","show_null_labels":false,"show_totals_labels":false,"show_silhouette":false,"totals_color":"#808080","series_types":{},"series_labels":{"prospect_pdt.campaign_disp":"Campaign","prospect_pdt.count_prospects":"Prospects","prospect_pdt.count_customers":"Initial Customers","prospect_pdt.conversion_percent":"Conversion Rate","prospect_pdt.total_revenue":"Gross Revenue","prospect_pdt.average_revenue":"AOV","prospect_pdt.affiliate_breakdown":"Affiliate Breakdown"},"enable_conditional_formatting":false,"conditional_formatting_ignored_fields":[],"conditional_formatting_include_totals":false,"conditional_formatting_include_nulls":false},"dynamic_fields":null,"sorts":["prospect_pdt.count_prospects desc"],"total":true,"id":1083454,"fill_fields":null,"filters":{"prospect_pdt.date_select":"' + date + '","prospect_pdt.is_test":"0","prospect_pdt.currency_fmt":"","prospect_pdt.campaign":"","prospect_pdt.campaign_disp":"","prospect_pdt.affiliate_id":"","prospect_pdt.sub_affiliate_id":""},"model":"limelight_transactional_reporting","view":"prospect_pdt","client_id":"ZRLmeEziCfjgPfEvGv7W6r","query_timezone":"America/New_York","row_total":null,"source":"dashboard","path_prefix":"/embed/explore","generate_links":true,"force_production":true,"server_table_calcs":false,"cache":true,"cache_only":true,"dashboard_id":4088,"elementId":28074,"parentSpan":{"_startMs":' + start_ms + ',"_finishMs":0,"_operationName":"DASHBOARD_ELEMENT","_tags":{"id":1083454,"title":"Sales By Prospects"},"_baggage":{},"_references":[{"_type":"child_of"}],"_timer":{}}},{"result_maker_id":33747,"merge_result_id":null,"query_id":3166097,"vis_config":{"show_view_names":false,"show_row_numbers":true,"truncate_column_names":false,"hide_totals":false,"hide_row_totals":false,"table_theme":"gray","limit_displayed_rows":false,"type":"table","stacking":"","show_value_labels":false,"label_density":25,"legend_position":"center","x_axis_gridlines":false,"y_axis_gridlines":true,"y_axis_combined":true,"show_y_axis_labels":true,"show_y_axis_ticks":true,"y_axis_tick_density":"default","y_axis_tick_density_custom":5,"show_x_axis_label":true,"show_x_axis_ticks":true,"x_axis_scale":"auto","y_axis_scale_mode":"linear","ordering":"none","show_null_labels":false,"show_totals_labels":false,"show_silhouette":false,"totals_color":"#808080","series_types":{},"series_labels":{"prospect_pdt.campaign_disp":"Campaign","prospect_pdt.count_prospects":"Prospects","prospect_pdt.count_customers":"Initial Customers","prospect_pdt.conversion_percent":"Conversion Rate","prospect_pdt.total_revenue":"Gross Revenue","prospect_pdt.average_revenue":"AOV","prospect_pdt.affiliate_breakdown":"Affiliate Breakdown"},"enable_conditional_formatting":false,"conditional_formatting_ignored_fields":[],"conditional_formatting_include_totals":false,"conditional_formatting_include_nulls":false},"dynamic_fields":null,"sorts":null,"total":true,"id":3166097,"fill_fields":null,"filters":{"prospect_pdt.date_select":"' + date + '","prospect_pdt.is_test":"0","prospect_pdt.currency_fmt":"","prospect_pdt.campaign":"","prospect_pdt.select_dimension":"affiliate^_id","prospect_pdt.select_dimension_2":"sub^_affiliate^_id","prospect_pdt.campaign_disp":"","prospect_pdt.affiliate_id":"","prospect_pdt.sub_affiliate_id":""},"model":"limelight_transactional_reporting","view":"prospect_pdt","client_id":"QpjBy0Js1D9hrrBeyTelol","query_timezone":"America/New_York","row_total":null,"source":"dashboard","path_prefix":"/embed/explore","generate_links":true,"force_production":true,"server_table_calcs":false,"cache":true,"cache_only":true,"dashboard_id":4088,"elementId":28076,"parentSpan":{"_startMs":' + start_ms + ',"_finishMs":0,"_operationName":"DASHBOARD_ELEMENT","_tags":{"id":3166097,"title":"Data by Traffic Source"},"_baggage":{},"_references":[{"_type":"child_of"}],"_timer":{}}}]'
+        data = '[{"result_maker_id":12842,"merge_result_id":null,"query_id":1083454,"vis_config":{"show_view_names":true,"show_row_numbers":true,"truncate_column_names":false,"hide_totals":false,"hide_row_totals":false,"table_theme":"gray","limit_displayed_rows":false,"type":"table","stacking":"","show_value_labels":false,"label_density":25,"legend_position":"center","x_axis_gridlines":false,"y_axis_gridlines":true,"y_axis_combined":true,"show_y_axis_labels":true,"show_y_axis_ticks":true,"y_axis_tick_density":"default","y_axis_tick_density_custom":5,"show_x_axis_label":true,"show_x_axis_ticks":true,"x_axis_scale":"auto","y_axis_scale_mode":"linear","ordering":"none","show_null_labels":false,"show_totals_labels":false,"show_silhouette":false,"totals_color":"#808080","series_types":{},"series_labels":{"prospect_pdt.campaign_disp":"Campaign","prospect_pdt.count_prospects":"Prospects","prospect_pdt.count_customers":"Initial Customers","prospect_pdt.conversion_percent":"Conversion Rate","prospect_pdt.total_revenue":"Gross Revenue","prospect_pdt.average_revenue":"AOV","prospect_pdt.affiliate_breakdown":"Affiliate Breakdown"},"enable_conditional_formatting":false,"conditional_formatting_ignored_fields":[],"conditional_formatting_include_totals":false,"conditional_formatting_include_nulls":false},"dynamic_fields":null,"sorts":["prospect_pdt.count_prospects desc"],"total":true,"id":1083454,"fill_fields":null,"filters":{"prospect_pdt.date_select":"' + date + '","prospect_pdt.is_test":"0","prospect_pdt.currency_fmt":"","prospect_pdt.campaign":"","prospect_pdt.campaign_disp":"","prospect_pdt.product_id":"","prospect_pdt.affiliate_id":"","prospect_pdt.sub_affiliate_id":""},"model":"limelight_transactional_reporting","view":"prospect_pdt","client_id":"ZRLmeEziCfjgPfEvGv7W6r","query_timezone":"America/New_York","row_total":null,"source":"dashboard","path_prefix":"/embed/explore","generate_links":true,"force_production":true,"server_table_calcs":false,"cache":true,"cache_only":true,"dashboard_id":4088,"elementId":28074,"parentSpan":{"_startMs":' + start_ms + ',"_finishMs":0,"_operationName":"DASHBOARD_ELEMENT","_tags":{"id":1083454,"title":"Sales By Prospects"},"_baggage":{},"_references":[{"_type":"child_of"}],"_timer":{}}}]'
+        response = requests.post(
+            self.subdomain + '.analytics.limelightcrm.com/api/internal/queries/multi_run_async',
+            data=data,
+            headers=headers
+        )
+        task_id_1 = response.json()[0]['query_task_id']
+        # task_id_2 = response.json()[1]['query_task_id']
+
+        requests.post(
+            self.subdomain + '.analytics.limelightcrm.com/api/internal/queries/async_long_poll',
+            data='["' + task_id_1 + '"]',
+            headers=headers
+        )
+
+        # url = (self.subdomain + ".analytics.limelightcrm.com/api/internal/query_tasks/multi_results?query_task_ids[]={}&query_task_ids[]={}").format
+        url = (self.subdomain + ".analytics.limelightcrm.com/api/internal/query_tasks/multi_results?query_task_ids[]={}").format
+        # response = requests.get(url(task_id_1, task_id_2), headers=header)
+        response = requests.get(url(task_id_1), headers=headers)
+        result = response.json()
+
+        prospects = result[task_id_1]['data']['data']
+        results = []
+        for prospect in prospects:
+            campaign_name = prospect['prospect_pdt.campaign_disp']['value']
+            campaign_id = int(campaign_name.split(')')[0][1:])
+            results.append({
+                'campaign_id': campaign_id,
+                'campaign_name': campaign_name,
+                'count_prospects': prospect['prospect_pdt.count_prospects']['value'],
+                'count_customers': {
+                    'value': prospect['prospect_pdt.count_customers']['value'],
+                    # 'links': prospect['prospect_pdt.count_customers']['links'],
+                },
+                'conversion_percent': {
+                    'value': prospect['prospect_pdt.conversion_percent']['value'],
+                    'rendered': prospect['prospect_pdt.conversion_percent']['rendered'],
+                },
+                'total_revenue': {
+                    'value': prospect['prospect_pdt.total_revenue']['value'],
+                    'html': prospect['prospect_pdt.total_revenue']['html'],
+                },
+                'average_revenue': {
+                    'value': prospect['prospect_pdt.average_revenue']['value'],
+                    'html': prospect['prospect_pdt.average_revenue']['html'],
+                },
+                # 'affiliate_breakdown': {
+                #     'value': prospect['prospect_pdt.affiliate_breakdown']['value'],
+                #     'html': prospect['prospect_pdt.affiliate_breakdown']['links'],
+                # },
+            })
+
+        return results

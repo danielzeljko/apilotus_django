@@ -19,6 +19,7 @@ urlpatterns = [
     url(r'^dashboard/$', views.dashboard, name='dashboard'),
     url(r'^initial_report/$', views.view_initial_report, name='report_initial'),
     url(r'^rebill_report/$', views.view_rebill_report, name='report_rebill'),
+    url(r'^custom_report/$', views.CustomReportView.as_view(), name='report_custom'),
     # url(r'^dashboard/$', views.dashboard, name='setting_campaign'),
     url(r'^cap_update/$', views.view_cap_update, name='cap_update'),
     url(r'^affiliates/$', views.view_affiliates, name='affiliates'),
@@ -39,6 +40,7 @@ urlpatterns = [
     url(r'^ajax_dashboard_sales_all/$', views.ajax_dashboard_sales_all, name='url_dashboard_sales_all'),
     url(r'^ajax_initial_list/$', views.ajax_initial_list, name='url_initial_list'),
     url(r'^ajax_rebill_list/$', views.ajax_rebill_list, name='url_rebill_list'),
+    url(r'^ajax_custom_report/$', views.ajax_custom_report, name='url_custom_report'),
 
     url(r'^export_billing_report/$', view=views.export_billing_report),
     url(r'^export_billing_reports/$', view=views.export_billing_reports),

@@ -121,6 +121,8 @@ if os.environ.get('DJANGO_DEVELOPMENT'):
             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
+
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'public/static')]
 else:
     DEBUG = False
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=Csv())
@@ -134,6 +136,13 @@ else:
             'HOST': 'localhost',
         }
     }
+
+    STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
+
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
@@ -244,8 +253,6 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'public/static')
-# STATICFILES_DIRS = [os.path.join(BASE_DIR, 'public/static')]
 
 TEMPLATE_DIRS = (os.path.join(BASE_DIR, 'templates'),)
 
@@ -310,11 +317,6 @@ REST_FRAMEWORK = {
         # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
-
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
 
 try:
     from .bot_settings import *

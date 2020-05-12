@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% load dashboard_tags %}
+
+{% block page_title %}Custom Report{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-xs-1"></div>
+    <div class="col-xs-10">
+      <div class="crm_board" style="margin-bottom: 15px;">
+        <div class="row crm_board_title">
+          <div class="col-xs-10" style="padding-left: 0">Custom Report</div>
+          <div class="col-xs-2 custom_waiting" style="text-align:right;"></div>
+        </div>
+        <div class="alert alert-warning custom_alert" role="alert" style="display:none"></div>
+        <div class="row crm_board_row">
+          <div class="col-xs-8">
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                CRM Account
+              </div>
+              <div class="col-xs-10">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle crm_toggle_button custom-option" data-toggle="dropdown">
+                  {% if crm_list %}
+                    {{ crm_list|get_by_index:0 }}
+                  {% else %}
+                    None CRM
+                  {% endif %}
+                  <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu crm_dropdown_menu custom-option" role="menu">
+                    {% for crm in crm_list %}
+                      <li><a href="#" id="{{ crm.id }}" class="crm_dropdown_list">{{ crm }}</a></li>
+                    {% endfor %}
+                </ul>
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Date
+              </div>
+              <div class="col-xs-10" style="display: flex;">
+                <button type="button" class="btn btn-default btn-sm dropdown-toggle date_toggle_button custom-option" data-toggle="dropdown">
+                    matches (advanced)&nbsp;<span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu date_dropdown_menu custom-option" role="menu">
+                    <li><a id="date_past">is in the past</a></li>
+                    <li><a id="date_custom">is on the day</a></li>
+                    <li><a id="date_range">is in range</a></li>
+                    <li><a id="date_match">matches (advanced)</a></li>
+                </ul>
+                <input type="text" class="btn btn-default custom-input" value="today" />
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Campaign (ID)
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Campaign Name
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Product (ID)
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Affiliate (ID)
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Sub-Affiliate (ID)
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+
+            <div class="row custom-row">
+              <div class="col-xs-2 custom-title">
+                Show Tests?
+              </div>
+              <div class="col-xs-10">
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xs-4" style="text-align:right; height:30px; padding-right: 30px;">
+            <button class="btn btn-default btn-sm btn_search" type="button" style="width:120px; margin-right: 10px;">
+              <span class="glyphicon glyphicon-search" aria-hidden="true"></span>&nbsp;&nbsp;Search
+            </button>
+          </div>
+        </div>
+
+        <table class="table table-hover" style="margin-top:10px;">
+          <thead>
+            <tr>
+              <th id="id_head_sign" rowspan="2" style="vertical-align:middle"></th>
+              <th>Campaign</th>
+              <th>Prospects</th>
+              <th>Initial Customers</th>
+              <th>Conversion Rate</th>
+              <th>Gross Revenue</th>
+              <th>AOV</th>
+{#              <th>Affiliate Breakdown</th>#}
+            </tr>
+          </thead>
+          <tbody class="table_body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="col-xs-1"></div>
+  </div>
+{% endblock %}
+
+{% block extra_js %}
+  <script type="text/javascript" src="{% static 'js/admin/custom.js' %}"></script>
+{% endblock %}

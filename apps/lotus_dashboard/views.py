@@ -2,16 +2,19 @@ from io import BytesIO
 
 import xlsxwriter
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.views.generic import TemplateView, ListView
 from lotus_alert.models import AlertStatus
 from lotus_dashboard.models import *
 from lotus_dashboard.tasks import task_get_dashboard_sales, task_update_campaigns, task_get_initial_reports, \
     task_get_rebill_reports, task_get_sales_report, task_get_billing_report
 
 from apilotus import settings
+from utils.llcrm import LLCRM
 
 
 @login_required
@@ -54,6 +57,25 @@ def view_rebill_report(request):
         'crm_list': crm_list,
     }
     return render(request, 'reports/rebill_report.html', context=context)
+
+
+class CustomReportView(LoginRequiredMixin, ListView):
+
+    context_object_name = 'crm_list'
+    template_name = 'reports/custom_report.html'
+
+    def get_queryset(self):
+        qs = CrmAccount.objects.active_crm_accounts()
+        return qs
+
+    def get_context_data(self, **kwargs):
+        """ Returns the context data to provide to the template. """
+        context = super().get_context_data(**kwargs)
+
+        # Insert the considered topic and the associated forum into the context
+        context['tab_name'] = 'Custom'
+
+        return context
 
 
 @login_required
@@ -238,6 +260,15 @@ def ajax_rebill_list(request):
         return JsonResponse(rebill_result.result, safe=False)
     except RebillResult.DoesNotExist:
         return JsonResponse('[]', safe=False)
+
+
+def ajax_custom_report(request):
+    crm_id = int(request.GET['crm_id'])
+    crm = CrmAccount.objects.get(id=crm_id)
+    llcrm = LLCRM(crm)
+    prospects = llcrm.get_custom_report()
+
+    return JsonResponse({'status': True, 'results': prospects})
 
 
 def export_billing_report(request):

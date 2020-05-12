@@ -301,5 +301,28 @@ table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before, tabl
 
 .campaign_select_all
 {
-    margin-top: 0px !important;
+    margin-top: 0 !important;
+}
+
+
+/*css for Custom Report page*/
+.custom-row {
+    margin-bottom: 10px;
+}
+
+.custom-title {
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.custom-option {
+    min-width: 200px;
+}
+
+ul.custom-option {
+    left: 15px;
+}
+
+.custom-input {
+    margin-left: 15px;
 }

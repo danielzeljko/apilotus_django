@@ -6,6 +6,8 @@ from django.contrib.sites.models import Site
 
 from django.db import models
 from django.db.models import Q
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
@@ -263,3 +265,13 @@ class LotusUserSignup(models.Model):
     completed = models.BooleanField(default=False)
     pwhash = models.CharField(max_length=256)
     datetime = models.DateTimeField(default=timezone.now)
+
+
+@receiver(post_save, sender=CrmAccount)
+def update_crm_position(sender, instance, **kwargs):
+    users = LotusUser.objects.all()
+    crm_accounts = CrmAccount.objects.filter(paused=False)
+    ids = ','.join([str(account.id) for account in crm_accounts])
+    for user in users:
+        user.crm_positions = ids
+        user.save()

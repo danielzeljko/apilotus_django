@@ -14,16 +14,19 @@
         <div class="collapse navbar-collapse bs-navbar-collapse" style="padding-top:22px; padding-right: 20px">
             <ul class="nav navbar-nav navbar-right">
                 <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
-                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Dashboard" or tab_name == "Affiliate" or tab_name == "Initial" or tab_name == "Rebill" or tab_name == "Sales" or tab_name == "Alerts" or tab_name == "Accounts" or tab_name == "Affiliate Management" or tab_name == "Alert Percentage Levels" or tab_name == "Campaign Management" or tab_name == "Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">LIMELIGHT CRM <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name in "Dashboard, Affiliate, Initial, Rebill, Custom, Sales, Alerts, Accounts, Affiliate Management, Alert Percentage Levels, Campaign Management, Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">LIMELIGHT CRM <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                         <li><a class="crm_tab_label{% if tab_name == "Dashboard" %} active{% endif %} small" href="{% url 'lotus_dashboard:dashboard' %}">Dashboard</a></li>
-                        {% if request.user|check_enable_menu:'21,22' %}
+                        {% if request.user|check_enable_menu:'21,22,23' %}
                         <li role="presentation" class="divider"></li>
                         {% if request.user|check_enable_menu:'21' %}
                         <li><a class="crm_tab_label{% if tab_name == "Initial" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_initial' %}">Initial's Report</a></li>
                         {% endif %}
                         {% if request.user|check_enable_menu:'22' %}
                         <li><a class="crm_tab_label{% if tab_name == "Rebill" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_rebill' %}">Rebill Report</a></li>
+                        {% endif %}
+                        {% if request.user|check_enable_menu:'23' %}
+                        <li><a class="crm_tab_label{% if tab_name == "Custom" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_custom' %}">Custom Report</a></li>
                         {% endif %}
                         {% endif %}
                         {% if request.user|check_enable_menu:'41,42,43,44' %}
@@ -45,9 +48,9 @@
                 </li>
                 <li class="visible-xs hidden-sm hidden-md visible-lg"><a class="crm_tab_label{% if tab_name == "Dashboard" %} active{% endif %}" href="{% url 'lotus_dashboard:dashboard' %}">DASHBOARD</a></li>
 
-                {% if request.user|check_enable_menu:'21,22' %}
+                {% if request.user|check_enable_menu:'21,22,23' %}
                 <li class="dropdown visible-xs hidden-sm hidden-md visible-lg">
-                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Affiliate" or tab_name == "Initial" or tab_name == "Rebill" or tab_name == "Sales" or tab_name == "Alerts" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">REPORTS <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name in "Affiliate, Initial, Rebill, 'Custom', Sales, Alerts" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">REPORTS <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                     {% if request.user|check_enable_menu:'21' %}
                         <li><a class="crm_tab_label{% if tab_name == "Initial" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_initial' %}">Initial's Report</a></li>
@@ -55,13 +58,16 @@
                     {% if request.user|check_enable_menu:'22' %}
                         <li><a class="crm_tab_label{% if tab_name == "Rebill" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_rebill' %}">Rebill Report</a></li>
                     {% endif %}
+                    {% if request.user|check_enable_menu:'23' %}
+                        <li><a class="crm_tab_label{% if tab_name == "Custom" %} active{% endif %} small" href="{% url 'lotus_dashboard:report_custom' %}">Custom Report</a></li>
+                    {% endif %}
                     </ul>
                 </li>
                 {% endif %}
 
                 {% if request.user|check_enable_menu:'41,42,43,44' %}
                 <li class="dropdown visible-xs hidden-sm hidden-md visible-lg">
-                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Accounts" or tab_name == "Affiliate Management" or tab_name == "Alert Percentage Levels" or tab_name == "Campaign Management" or tab_name == "Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">SETTINGS <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name in "Accounts, Affiliate Management, Alert Percentage Levels, Campaign Management, Client Setup" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">SETTINGS <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                     {% if request.user|check_enable_menu:'41' %}
                         <li><a class="crm_tab_label{% if tab_name == "Client Setup" %} active{% endif %} small" href="/apilotus-admin/lotus_dashboard/crmaccount/">Client Setup</a></li>
@@ -81,7 +87,7 @@
 
                 {% if request.user|check_enable_menu:'31,32,33' %}
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "CAP Update" or tab_name == "Offers" or tab_name == "Affiliate Settings" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">CAP UPDATE <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name in "CAP Update, Offers, Affiliate Settings" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">CAP UPDATE <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                     {% if request.user|check_enable_menu:'31' %}
                         <li><a class="crm_tab_label{% if tab_name == "CAP Update" %} active{% endif %} small" href="{% url 'lotus_dashboard:cap_update' %}">CAP Update</a></li>
@@ -98,7 +104,7 @@
 
                 {% if request.user|check_enable_menu:'51,52,53,54' %}
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name == "Billing" or tab_name == "Billing Offers" or tab_name == "Billing Affiliates" or tab_name == "Billing Reports" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">BILLING <span class="caret"></span></a>
+                    <a href="#" class="dropdown-toggle crm_tab_label{% if tab_name in "Billing, Billing Offers, Billing Affiliates, Billing Reports" %} active{% endif %}" data-toggle="dropdown" role="button" aria-expanded="false">BILLING <span class="caret"></span></a>
                     <ul class="dropdown-menu crm_setting_dropdown" role="menu">
                     {% if request.user|check_enable_menu:'51' %}
                         <li><a class="crm_tab_label{% if tab_name == "Billing" %} active{% endif %} small" href="{% url 'lotus_dashboard:billing_dashboard' %}">Billing</a></li>
