@@ -20,3 +20,12 @@ if __name__ == "__main__":
             )
         raise
     execute_from_command_line(sys.argv)
+
+# 1. 026363159, 1912297600
+# everything goes fine here. hope so there. and husband asking if the first daughter did the marriage, if not why.
+# 2. 029521233, 1913444225
+# everything goes fine here. hope so. any problem there?
+# 3. 023391427, 1915564411(my wf)
+# I am fine here, and I hope so there.
+# yesterday, when I calling with my boss, I heard the news that you are finding new job in company(maybe named "Unhaeng").
+# I hope it's good news, and want to know about it in detail.
