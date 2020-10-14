@@ -34,7 +34,7 @@ if __name__ == "__main__":
 # Hi, my love. I am fine here, everything goes well.
 # I really missing you and daughter, especially nowadays, I meet you almost everyday in my dream, so I hate waking up from a fantasic dream. So does you?
 # First, call hyonho's wife(riunsim) and give her $300 asap, because hyonho's mother is in cancer.
-# I be paid it here, and will send to you soon, but I don't know exactly when it will be delivered to you.
+# I be paid it here, and will send 1k to you soon, but I don't know exactly when it will be delivered to you.
 # Because money is also quarantined in homeland. Just wait the call.
 # Second, The news of hyonho's mother made me worried about parent's health, especially your mother's health.
 # We have to be loyal to them when they are alive.
