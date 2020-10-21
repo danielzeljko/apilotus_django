@@ -20,3 +20,10 @@ if __name__ == "__main__":
             )
         raise
     execute_from_command_line(sys.argv)
+
+# Hello, HyongBom(191-229-5657,191-333-6271)
+# I am SongHyok, I am calling at SuJong's sister's favor.
+# They are worrying about Sujong, Hyongbom, and mother.
+# Especially worrying about Sujong's health, mother's health, Hyongbom's business.
+# A few days ago, Sujong's sister dreamed that you(sujong and hyongbom) made a baby. If there is good happening in homeland, let me know.
+# They(sujong's sister and his husband here) really want to hear detailed news of homeland.
